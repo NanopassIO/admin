@@ -17,7 +17,7 @@ function App () {
     <button id="click"
       onClick=${()=> {pushBatch({
         password: $('#password').val(),
-        payload: {
+        params: {
           batch: $('#batch').val(),
           address: 'test'
         }
