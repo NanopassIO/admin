@@ -1,0 +1,17 @@
+{
+  "name": "admin",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+  },
+  "dependencies": {
+    "ethers": "^5.5.1",
+    "faunadb": "^4.4.1",
+    "jquery": "^3.2.1",
+    "popper.js": "^1.16.1"
+  }
+}
