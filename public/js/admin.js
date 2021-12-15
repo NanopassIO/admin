@@ -1,33 +1,31 @@
-import { h, Component, render } from 'https://unpkg.com/preact?module';
+import { h, Component, render } from 'https://unpkg.com/preact@latest?module';
+import { useState } from 'https://unpkg.com/preact/hooks/dist/hooks.module.js?module';
 import htm from 'https://unpkg.com/htm?module';
 import 'https://unpkg.com/jquery';
+import { pushBatch } from './functions.js'
+
 const $ = window.$;
 const html = htm.bind(h);
 
-let state = {}
-
 function App () {
-  return html`<h1>Nanopass Admin Panel</h1>
-  
-  
+  const [value, setValue] = useState(0)
+  return html`
+    <label for="batch">Batch:</label><br/>
+    <input type="batch" id="batch" name="batch" /><br/><br/>
+    <label for="password">Password:</label><br/>
+    <input type="password" id="password" name="password" /><br/><br/>
+    <button id="click"
+      onClick=${()=> {pushBatch({
+        password: $('#password').value(),
+        payload: {
+          batch: $('#batch').value(),
+          address: 'test'
+        }
+      })}}
+      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      Click Me
+    </button>
   `;
 }
 
-function renderAll() {
-  render(html`<${App} />`, $('body').get(0));
-}
-
-renderAll()
-
-const myTodo = {
-  title: 'My todo title',
-  completed: false,
-}
-
-async function test() {
-  console.log("test")
-  console.log(await fetch('/.netlify/functions/crypto', {
-      body: JSON.stringify(myTodo),
-      method: 'POST'
-  }))
-}
+render(html`<${App} />`, $('#content').get(0))
