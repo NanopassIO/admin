@@ -7,12 +7,7 @@ const client = new faunadb.Client({
 })
 
 async function handle(params) {
-  try {
-    const response = await client.query(q.Create(q.Collection("batches"), params))
-    return callback(null, { statusCode: 200, body: JSON.stringify(response) })
-  } catch(error) {
-    return callback(null, { statusCode: 500, body: JSON.stringify(error) })
-  }
+  return await client.query(q.Create(q.Collection("batches"), params))
 }
 
 exports.handler = (event, context, callback) => {
@@ -23,5 +18,9 @@ exports.handler = (event, context, callback) => {
     })
   }
 
-  return handle(data.params)
+  handle(data.params).then(response => {
+    return callback(null, { statusCode: 200, body: JSON.stringify(response) })
+  }).catch(error => {
+    return callback(null, { statusCode: 500, body: JSON.stringify(error) })
+  })
 }
