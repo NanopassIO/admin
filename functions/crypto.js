@@ -21,3 +21,21 @@ exports.handler = async (event, context, callback) => {
       })
     }) 
   }
+
+
+/*
+
+// Verify signed signature
+
+
+const digest = ethers.utils.id('blackbox');
+
+const signer = provider.getSigner();
+const signature = await signer.signMessage(digest)
+const joinedSignature = ethers.utils.joinSignature(signature);
+// 0xf0a760680a88ec3efff6e68ebce051b948cffd51d5814a448c0b32e35f2c753a6862077f01ae8edfccd524ba843b9340bcedfeafe62167fdd8517ca8528f398b1c
+
+const recoveredAddress = ethers.utils.recoverAddress(digest, signature);
+// 0x2f112ad225E011f067b2E456532918E6D679F978
+
+*/
