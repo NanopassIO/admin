@@ -8,18 +8,18 @@ async function start() {
   const provider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/9724413afc4848ccad51e8bf04e803cd');
   let contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider)
 
-  const addresses = []
-  for(let i = 0;i < 5555;i++) {
-    try {
-      const owner = await contract.ownerOf(i)
-      console.log(owner)
-      addresses.push(owner)
-      } catch(e) {
-      console.log(`No owner for ${i}`)
-    }
+  const maxSupply = 5555
+  let addresses = []
+  const portions = 250
+  for(let i = 0;i < maxSupply;i+=portions) {
+    const section = Array.from(Array(portions), (_,x)=>i+x).filter(x => x < maxSupply)
+    console.log(`Fetching ${i} to ${i + portions}`)
+    addresses = addresses.concat(await Promise.all(section.map(async x => {
+        return await contract.ownerOf(x)
+      })))
   }
 
-  fs.writeFileSync('../output/snapshot.json', JSON.stringify(addresses))
+  fs.writeFileSync('../output/snapshot.json', JSON.stringify(addresses, null, 2))
 }
 
 start()
