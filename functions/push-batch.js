@@ -7,7 +7,9 @@ const client = new faunadb.Client({
 })
 
 async function handle(params) {
-  return await client.query(q.Create(q.Collection("batches"), params))
+  return await client.query(q.Create(q.Collection("batches"), {
+    data: params
+  }))
 }
 
 exports.handler = (event, context, callback) => {

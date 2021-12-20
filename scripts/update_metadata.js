@@ -9,7 +9,8 @@ const start = async () => {
     const section = Array.from(Array(portions), (_,x)=>i+x).filter(x => x < toTokenId)
     await Promise.all(section.map(async x => {
       const url = `https://api.opensea.io/api/v1/asset/${contractAddress}/${x}/?force_update=true`; 
-      await fetch(url); 
+      const response = await fetch(url); 
+      //console.log(response)
     }))
     console.log(`Done with ${i} to ${i+portions}`); 
   }
