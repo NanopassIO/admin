@@ -1,7 +1,7 @@
 import { h, render } from 'https://unpkg.com/preact@latest?module';
 import { useState } from 'https://unpkg.com/preact/hooks/dist/hooks.module.js?module';
 import htm from 'https://unpkg.com/htm?module';
-import { preloadBatch, getBatch } from './functions.js'
+import { preloadBatch, getBatch, activateBatch, getPrizeList, addPrize, deletePrize } from './functions.js'
 
 const $ = window.$;
 const html = htm.bind(h);
@@ -11,48 +11,86 @@ function App () {
   return html`
     <label for="password">Password:</label>
     <input value="" type="password" id="password" name="password" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/><br/>
+    <span style="color: red">${error}</span>
     <h1>Batch Management</h1>
     <label for="batch">Batch:</label>
-    <input type="batch" id="batch" name="batch" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
+    <input type="batch" id="batch" name="batch" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/><br/>
     <button id="click"
-      onClick=${async ()=> {
-        $.LoadingOverlay('show')
-        try {
-          await preloadBatch({
+      onClick=${() => preloadBatch({
             password: $('#password').val(),
             data: {
               batch: $('#batch').val()
             }
-          })
-        } catch(e) {
-          setError(e.message) 
-        } finally {
-          $.LoadingOverlay('hide')
-        }
-      }}
+          }, setError)}
       class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
       Preload Batch
     </button><br/><br/>
     <button id="click"
-      onClick=${async ()=> {
-        $.LoadingOverlay('show')
-        try {
-          await getBatch({
+      onClick=${() => activateBatch({
             password: $('#password').val(),
             data: {
               batch: $('#batch').val()
             }
-          })
-        } catch(e) {
-          setError(e.message) 
-        } finally {
-          $.LoadingOverlay('hide')
-        }
-      }}
+          }, setError)}
+      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      Activate Batch
+    </button><br/><br/>
+    <button id="click"
+      onClick=${() => getBatch({
+            password: $('#password').val(),
+            data: {
+              batch: $('#batch').val()
+            }
+          }, setError)}
       class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
       Get Batch
     </button><br/><br/>
-    <span style="color: red">${error}</span>
+    <button id="click"
+      onClick=${() => getPrizeList({
+            password: $('#password').val(),
+            data: {
+              batch: $('#batch').val()
+            }
+          }, setError)}
+      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      Get Prize List
+    </button><br/><br/>
+    <h1>Prize Management</h1>
+    <label for="prizeBatch">Batch:</label>
+    <input type="prizeBatch" id="prizeBatch" name="prizeBatch" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/>
+    <label for="prizeName">Prize Name:</label>
+    <input type="prizeName" id="prizeName" name="prizeName" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/>
+    <label for="prizeDesc">Prize Description:</label>
+    <input type="prizeDesc" id="prizeDesc" name="prizeDesc" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/>
+    <label for="prizeImage">Prize Image:</label>
+    <input type="prizeImage" id="prizeImage" name="prizeImage" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/>
+    <label for="prizeAmount">Prize Count:</label>
+    <input type="prizeAmount" id="prizeAmount" name="prizeAmount" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/><br/>
+    <button id="click"
+      onClick=${() => addPrize({
+            password: $('#password').val(),
+            data: {
+              batch: $('#prizeBatch').val(),
+              name: $('#prizeName').val(),
+              description: $('#prizeDesc').val(),
+              image: $('#prizeImage').val(),
+              count: $('#prizeAmount').val()
+            }
+          }, setError)}
+      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      Add Prize
+    </button><br/><br/>
+    <button id="click"
+      onClick=${() => deletePrize({
+            password: $('#password').val(),
+            data: {
+              batch: $('#prizeBatch').val(),
+              name: $('#prizeName').val()
+            }
+          }, setError)}
+      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      Delete Prize
+    </button><br/><br/>
   `;
 }
 

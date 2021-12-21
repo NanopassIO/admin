@@ -24,7 +24,6 @@ exports.handler = async (event, context, callback) => {
 
 
 /*
-
 // Verify signed signature
 
 
@@ -37,5 +36,4 @@ const joinedSignature = ethers.utils.joinSignature(signature);
 
 const recoveredAddress = ethers.utils.recoverAddress(digest, signature);
 // 0x2f112ad225E011f067b2E456532918E6D679F978
-
 */

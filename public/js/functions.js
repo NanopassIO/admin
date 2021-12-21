@@ -1,28 +1,108 @@
-export async function preloadBatch(params) {
-  await fetch('/.netlify/functions/preload-batch-background', {
-      body: JSON.stringify(params),
-      method: 'POST'
-  })
-}
+const $ = window.$;
 
-function convertToCsv(items) {
+function convertToCsv(items, overrideHeaders) {
   const replacer = (key, value) => value === null ? '' : value // specify how you want to handle null values here
-  const header = Object.keys(items[0])
+  const header = overrideHeaders ?? Object.keys(items[0])
   return [
     header.join(','), // header row first
     ...items.map(row => header.map(fieldName => JSON.stringify(row[fieldName], replacer)).join(','))
   ].join('\r\n')
 }
 
-export async function getBatch(params) {
-  const response = await fetch('/.netlify/functions/get-batch', {
+
+export async function preloadBatch(params, setError) {
+  $.LoadingOverlay('show')
+  try {
+    await fetch('/.netlify/functions/preload-batch-background', {
+        body: JSON.stringify(params),
+        method: 'POST'
+    })
+  } catch(e) {
+    setError(e.message) 
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
+
+export async function activateBatch(params, setError) {
+  $.LoadingOverlay('show')
+  try {
+    await fetch('/.netlify/functions/activate-batch-background', {
+        body: JSON.stringify(params),
+        method: 'POST'
+    })
+  } catch(e) {
+    setError(e.message) 
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
+
+export async function getBatch(params, setError) {
+  $.LoadingOverlay('show')
+  try {
+    const response = await fetch('/.netlify/functions/get-batch', {
       body: JSON.stringify(params),
       method: 'POST'
-  })
+    })
 
-  const json = await response.json()
-  const csv = convertToCsv(json.Items)
+    const json = await response.json()
+    console.log(JSON.stringify(json, null, 2))
+    const csv = convertToCsv(json.Items, ['address', 'balance', 'prizes', 'claimed'])
 
-  const uriContent = "data:text/csv," + encodeURIComponent(csv);
-  window.open(uriContent, 'batch.csv');
+    const uriContent = "data:text/csv," + encodeURIComponent(csv);
+    window.open(uriContent, 'batch.csv');
+  } catch(e) {
+    setError(e.message) 
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
+
+export async function getPrizeList(params, setError) {
+  $.LoadingOverlay('show')
+  try {
+    const response = await fetch('/.netlify/functions/get-prizes', {
+      body: JSON.stringify(params),
+      method: 'POST'
+    })
+
+    const json = await response.json()
+    const csv = convertToCsv(json.Items)
+
+    const uriContent = "data:text/csv," + encodeURIComponent(csv);
+    window.open(uriContent, 'prizes.csv');
+  } catch(e) {
+    setError(e.message) 
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
+
+export async function addPrize(params, setError) {
+  $.LoadingOverlay('show')
+  try {
+    await fetch('/.netlify/functions/add-prize', {
+        body: JSON.stringify(params),
+        method: 'POST'
+    })
+  } catch(e) {
+    setError(e.message) 
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
+
+export async function deletePrize(params, setError) {
+  $.LoadingOverlay('show')
+  try {
+    await fetch('/.netlify/functions/delete-prize', {
+        body: JSON.stringify(params),
+        method: 'POST'
+    })
+  } catch(e) {
+    setError(e.message) 
+  } finally {
+    $.LoadingOverlay('hide')
+  }
 }
