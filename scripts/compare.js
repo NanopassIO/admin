@@ -23,3 +23,14 @@ for(const address of Object.keys(preRH)) {
 
 //console.log(JSON.stringify(holders, null, 2))
 console.log(Object.keys(holders).length)
+console.log(Object.keys(holders).reduce((p,c) => p+holders[c], 0))
+
+let addresses = []
+for(const address of Object.keys(holders)) {
+  addresses.push({ address, count: holders[address] })
+}
+
+addresses = addresses.sort((a,b) => b.count - a.count)
+addresses = addresses.slice(0, 10)
+
+console.log(JSON.stringify(addresses, null, 2))

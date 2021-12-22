@@ -109,31 +109,33 @@ async function handle(data) {
   // Assign prizes based on addresses list shuffle
   let prizeAssignment = {}
   for(let i = 0;i < shuffledAddresses.length;i++) {
-    prizeAssignment[shuffledAddresses[i]] = 
-      [...(prizeAssignment[shuffledAddresses[i]] ? prizeAssignment[shuffledAddresses[i]] : []), prizes[i].name]
+    const val = prizeAssignment[shuffledAddresses[i]]
+    prizeAssignment[shuffledAddresses[i]] = [...(val ? val : []), prizes[i].name]
   }
 
   // Push array of prizes
-  const keyCount = existingAddresses.length
+  const keyCount = flatAddresses.length
   for(let i = 0;i < keyCount;i+=portions) {
-    await Promise.all(existingAddresses.slice(i, i+portions).map(async x => {
-      if(prizeAssignment[x.address]) {
-        var params = {
-          TableName: table,
-          Item: {
-            batch: data.batch,
-            address: x.address,
-            balance: prizeAssignment[x.address].length,
-            prizes: prizeAssignment[x.address].join(',')
-          }
+    await Promise.all(flatAddresses.slice(i, i+portions).map(async x => {
+      const params = {
+        TableName: table,
+        Item: prizeAssignment[x.address] ? {
+          batch: data.batch,
+          address: x.address,
+          balance: prizeAssignment[x.address].length,
+          prizes: JSON.stringify(prizeAssignment[x.address])
+        } : {
+          batch: data.batch,
+          address: x.address,
+          balance: 1,
+          prizes: '[]'
         }
-        
-        await put(params)
-        console.log(params)
       }
-    }))
 
-//    console.log(`Pushing ${i} to ${i + portions}`)
+      await put(params)
+      console.log(params)
+  }))
+    //console.log(`Pushing ${i} to ${i + portions}`)
   }
 
 
@@ -141,7 +143,8 @@ async function handle(data) {
   var params = {
     TableName: 'settings',
     Item: {
-      active: data.batch
+      active: 'active',
+      batch: data.batch
     }
   }
   
@@ -149,7 +152,7 @@ async function handle(data) {
 }
 
 exports.handler = (event, _, callback) => {
-  const json = JSON.parse(event.body)  
+  const json = JSON.parse(event.body)
   if(json.password !== process.env.PASSWORD) {
     return callback(null, {
       statusCode: 401
