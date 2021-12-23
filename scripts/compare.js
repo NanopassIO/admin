@@ -34,3 +34,5 @@ addresses = addresses.sort((a,b) => b.count - a.count)
 addresses = addresses.slice(0, 10)
 
 console.log(JSON.stringify(addresses, null, 2))
+
+console.log(holders['0x2D7BFbA6e49c9cd451C44d27775725fc56F3B044'])

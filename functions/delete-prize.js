@@ -26,6 +26,7 @@ async function handle(data) {
 exports.handler = (event, _, callback) => {
   const json = JSON.parse(event.body)  
   if(json.password !== process.env.PASSWORD) {
+    console.log('Unauthorized access')
     return callback(null, {
       statusCode: 401
     })

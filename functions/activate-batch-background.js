@@ -37,123 +37,137 @@ function shuffle(array) {
 }
 
 async function handle(data) {
-  // Get existing address list
-  var params = {
-    TableName : table,
-    ExpressionAttributeNames:{
-        "#b": "batch"
-    },
-    ExpressionAttributeValues: {
-        ":batch": data.batch
-    },
-    KeyConditionExpression: "#b = :batch"
-  };
-  let result = await query(params);
-  const existingAddresses = result.Items
+  try {
+    // Get existing address list
+    var params = {
+      TableName : table,
+      ExpressionAttributeNames:{
+          "#b": "batch"
+      },
+      ExpressionAttributeValues: {
+          ":batch": data.batch
+      },
+      KeyConditionExpression: "#b = :batch"
+    };
+    let result = await query(params);
+    const existingAddresses = result.Items
 
-  // Fetch new list
-  const maxSupply = 5555
-  const portions = 250
-  let postReveal = []
-  for(let i = 0;i < maxSupply;i+=portions) {
-    const section = Array.from(Array(portions), (_,x)=>i+x).filter(x => x < maxSupply)
-    console.log(`Fetching ${i} to ${i + portions}`)
-    postReveal = postReveal.concat(await Promise.all(section.map(async x => {
-      return await contract.ownerOf(x)
-    })))
-  }
-
-  let postRH = {}
-  for(const address of postReveal) {
-    postRH[address] = postRH[address] ? postRH[address] + 1 : 1
-  }
-
-  // Compare lists
-  const min = (x,y) => x > y ? y : x
-
-  let flatAddresses = []
-  for(const address of existingAddresses) {
-    const count = min(address.balance ?? 0, postRH[address.address] ?? 0)
-    for(let i = 0;i < count;i++) {
-      flatAddresses.push(address.address)
+    // Fetch new list
+    const maxSupply = 5555
+    const portions = 250
+    let postReveal = []
+    for(let i = 0;i < maxSupply;i+=portions) {
+      const section = Array.from(Array(portions), (_,x)=>i+x).filter(x => x < maxSupply)
+      console.log(`Fetching ${i} to ${i + portions}`)
+      postReveal = postReveal.concat(await Promise.all(section.map(async x => {
+        return await contract.ownerOf(x)
+      })))
     }
-  }
 
-  // Fetch list of prizes
-  params = {
-    TableName : 'prizes',
-    ExpressionAttributeNames:{
-        "#b": "batch"
-    },
-    ExpressionAttributeValues: {
-        ":batch": data.batch
-    },
-    KeyConditionExpression: "#b = :batch"
-  };
-  result = await query(params);
-  let prizesDb = result.Items
-  let prizes = []
-  for(const prizeDb of prizesDb) {
-    const prizeCount = parseInt(prizeDb.count)
-    for(let i = 0;i < prizeCount;i++) {
-      prizes.push(prizeDb)
+    let postRH = {}
+    for(const address of postReveal) {
+      postRH[address] = postRH[address] ? postRH[address] + 1 : 1
     }
-  }
 
-  // Shuffle addresses list
-  let shuffledAddresses = shuffle(flatAddresses)
+    // Compare lists
+    const min = (x,y) => x > y ? y : x
 
-  // Slice list for extra addresses
-  shuffledAddresses = shuffledAddresses.slice(0, prizes.length)
-
-  // Assign prizes based on addresses list shuffle
-  let prizeAssignment = {}
-  for(let i = 0;i < shuffledAddresses.length;i++) {
-    const val = prizeAssignment[shuffledAddresses[i]]
-    prizeAssignment[shuffledAddresses[i]] = [...(val ? val : []), prizes[i].name]
-  }
-
-  // Push array of prizes
-  const keyCount = flatAddresses.length
-  for(let i = 0;i < keyCount;i+=portions) {
-    await Promise.all(flatAddresses.slice(i, i+portions).map(async x => {
-      const params = {
-        TableName: table,
-        Item: prizeAssignment[x.address] ? {
-          batch: data.batch,
-          address: x.address,
-          balance: prizeAssignment[x.address].length,
-          prizes: JSON.stringify(prizeAssignment[x.address])
-        } : {
-          batch: data.batch,
-          address: x.address,
-          balance: 1,
-          prizes: '[]'
+    let flatAddresses = []
+    const holderBalance = {}
+    for(const account of existingAddresses) {
+      const count = min(account.balance ?? 0, postRH[account.address] ?? 0)
+      if(count > 0) {
+        holderBalance[account.address] = count
+        for(let i = 0;i < count;i++) {
+          flatAddresses.push(account.address)
         }
       }
-
-      await put(params)
-      console.log(params)
-  }))
-    //console.log(`Pushing ${i} to ${i + portions}`)
-  }
-
-
-  // Set batch as active
-  var params = {
-    TableName: 'settings',
-    Item: {
-      active: 'active',
-      batch: data.batch
     }
+
+    // Fetch list of prizes
+    params = {
+      TableName : 'prizes',
+      ExpressionAttributeNames:{
+          "#b": "batch"
+      },
+      ExpressionAttributeValues: {
+          ":batch": data.batch
+      },
+      KeyConditionExpression: "#b = :batch"
+    };
+    result = await query(params);
+    let prizesDb = result.Items
+    let prizes = []
+    for(const prizeDb of prizesDb) {
+      const prizeCount = parseInt(prizeDb.count)
+      for(let i = 0;i < prizeCount;i++) {
+        prizes.push(prizeDb)
+      }
+    }
+
+    // Shuffle addresses list
+    let shuffledAddresses = shuffle(flatAddresses)
+
+    // Slice list for extra addresses
+    shuffledAddresses = shuffledAddresses.slice(0, prizes.length)
+
+    // Assign prizes based on addresses list shuffle
+    let prizeAssignment = {}
+    for(let i = 0;i < shuffledAddresses.length;i++) {
+      const val = prizeAssignment[shuffledAddresses[i]]
+      prizeAssignment[shuffledAddresses[i]] = [...(val ? val : []), prizes[i].name]
+    }
+
+    const max = (a,b) => a > b ? a : b
+
+    // Push array of prizes
+    const holderKeys = Object.keys(holderBalance)
+    const keyCount = holderKeys.length
+    for(let i = 0;i < keyCount;i+=portions) {
+      await Promise.all(holderKeys.slice(i, i+portions).map(async x => {
+        const params = {
+          TableName: table,
+          Item: prizeAssignment[x] ? {
+            batch: data.batch,
+            address: x,
+            balance: max(prizeAssignment[x].length, holderBalance[x]),
+            prizes: JSON.stringify(prizeAssignment[x])
+          } : {
+            batch: data.batch,
+            address: x,
+            balance: holderBalance[x],
+            prizes: '[]'
+          }
+        }
+
+        // console.log(params)
+        // console.log(x)
+        await put(params)
+      }))
+      console.log(`Pushing ${i} to ${i + portions}`)
+    }
+
+
+    // Set batch as active
+    var params = {
+      TableName: 'settings',
+      Item: {
+        active: 'active',
+        batch: data.batch
+      }
+    }
+    
+    await put(params)
+  } catch(e) {
+    console.log(e.message)
+    throw e
   }
-  
-  await put(params)
 }
 
 exports.handler = (event, _, callback) => {
   const json = JSON.parse(event.body)
   if(json.password !== process.env.PASSWORD) {
+    console.log('Unauthorized access')
     return callback(null, {
       statusCode: 401
     })
