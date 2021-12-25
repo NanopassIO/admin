@@ -41,7 +41,7 @@ function App () {
             }
           }, setError)}
       class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-      Activate Batch
+      Randomize and Activate Batch
     </button><br/><br/>
     <button id="click"
       onClick=${() => overrideActiveBatch({
