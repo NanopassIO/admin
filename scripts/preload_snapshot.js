@@ -18,6 +18,7 @@ async function handle(batch) {
     bbCount[address] = bbCount[address] ? bbCount[address] + 1 : 1
   }
 
+  const portions = 250
   const put = util.promisify(docClient.put).bind(docClient)
   const bbAddresses = Object.keys(bbCount)
   const keyCount = bbAddresses.length
