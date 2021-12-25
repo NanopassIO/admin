@@ -89,10 +89,10 @@ function App () {
             password: $('#password').val(),
             data: {
               batch: $('#prizeBatch').val(),
-              name: $('#prizeName').val(),
-              description: $('#prizeDesc').val(),
-              image: $('#prizeImage').val(),
-              count: $('#prizeAmount').val()
+              name: $('#prizeName').val().trim(),
+              description: $('#prizeDesc').val().trim(),
+              image: $('#prizeImage').val().trim(),
+              count: $('#prizeAmount').val().trim()
             }
           }, setError)}
       class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
