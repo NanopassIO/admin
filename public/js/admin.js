@@ -1,18 +1,26 @@
 import { h, render } from 'https://unpkg.com/preact@latest?module';
-import { useState } from 'https://unpkg.com/preact/hooks/dist/hooks.module.js?module';
+import { useState, useEffect } from 'https://unpkg.com/preact/hooks/dist/hooks.module.js?module';
 import htm from 'https://unpkg.com/htm?module';
-import { preloadBatch, getBatch, activateBatch, getPrizeList, addPrize, deletePrize } from './functions.js'
+import { preloadBatch, getBatch, activateBatch, getPrizeList, addPrize, deletePrize, getActiveBatch, overrideActiveBatch } from './functions.js'
 
 const $ = window.$;
 const html = htm.bind(h);
 
 function App () {
   const [error, setError] = useState('')
+  const [activeBatch, setActiveBatch] = useState('')
+  useEffect(() => {
+    getActiveBatch(setError)
+       .then(settings => {
+        setActiveBatch(settings.batch);
+       });
+  });
   return html`
     <label for="password">Password:</label>
     <input value="" type="password" id="password" name="password" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/><br/>
     <span style="color: red">${error}</span>
     <h1>Batch Management</h1>
+    <div>Active Batch: ${activeBatch}</div>
     <label for="batch">Batch:</label>
     <input type="batch" id="batch" name="batch" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/><br/>
     <button id="click"
@@ -34,6 +42,16 @@ function App () {
           }, setError)}
       class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
       Activate Batch
+    </button><br/><br/>
+    <button id="click"
+      onClick=${() => overrideActiveBatch({
+            password: $('#password').val(),
+            data: {
+              batch: $('#batch').val()
+            }
+          }, setError)}
+      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      Override Active Batch
     </button><br/><br/>
     <button id="click"
       onClick=${() => getBatch({

@@ -4,6 +4,7 @@
   "description": "",
   "scripts": {},
   "author": "",
+  "type": "module",
   "license": "ISC",
   "dependencies": {
     "aws-sdk": "^2.1046.0",
