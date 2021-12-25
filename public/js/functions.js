@@ -70,8 +70,13 @@ export async function getBatch(params, setError) {
     })
 
     const json = await response.json()
-    console.log(JSON.stringify(json, null, 2))
-    const csv = convertToCsv(json.Items, ['address', 'balance', 'prizes', 'claimed'])
+    //console.log(JSON.stringify(json, null, 2))
+    const converted = json.Items.map(x => ({
+      ...x,
+      prizes: JSON.parse(x.prizes ? x.prizes : '[]').join('+'),
+      claimed: JSON.parse(x.claimed ? x.claimed : '[]').join('+')
+    }))
+    const csv = convertToCsv(converted, ['address', 'balance', 'prizes', 'claimed'])
 
     const uriContent = "data:text/csv," + encodeURIComponent(csv);
     window.open(uriContent, 'batch.csv');
