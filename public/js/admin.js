@@ -9,12 +9,14 @@ const html = htm.bind(h);
 function App () {
   const [error, setError] = useState('')
   const [activeBatch, setActiveBatch] = useState('')
+  const [inventoryImage, setInventoryImage] = useState('')
+  const [inventoryName, setInventoryName] = useState('')
   useEffect(() => {
     getActiveBatch(setError)
        .then(settings => {
         setActiveBatch(settings.batch);
        });
-  });
+  }, [activeBatch]);
   return html`
     <label for="password">Password:</label>
     <input value="" type="password" id="password" name="password" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/><br/>
@@ -74,14 +76,24 @@ function App () {
       Get Prize List
     </button><br/><br/>
     <h1>Prize Management</h1>
+    <div class="inventory-item">
+      <picture>
+        <img src="${inventoryImage}" class="inventoryImage" />
+      </picture>
+      <label class="inventoryLabel">${inventoryName}</label>
+    </div>
     <label for="prizeBatch">Batch:</label>
     <input type="prizeBatch" id="prizeBatch" name="prizeBatch" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/>
     <label for="prizeName">Prize Name:</label>
-    <input type="prizeName" id="prizeName" name="prizeName" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/>
+    <input type="prizeName" onchange="${(e)=>{
+      setInventoryName(e.target.value)
+    }}" id="prizeName" name="prizeName" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/>
     <label for="prizeDesc">Prize Description:</label>
     <input type="prizeDesc" id="prizeDesc" name="prizeDesc" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/>
     <label for="prizeImage">Prize Image:</label>
-    <input type="prizeImage" id="prizeImage" name="prizeImage" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/>
+    <input type="prizeImage" onchange="${(e)=>{
+      setInventoryImage(e.target.value)
+    }}" id="prizeImage" name="prizeImage" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/>
     <label for="prizeAmount">Prize Count:</label>
     <input type="prizeAmount" id="prizeAmount" name="prizeAmount" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/><br/>
     <button id="click"
