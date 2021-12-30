@@ -1,4 +1,4 @@
-name: Preload Batch Testing
+name: Black Box Batch Testing
 on:
   schedule:
     - cron: '0 4 * * *'
