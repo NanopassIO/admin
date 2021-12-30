@@ -2,6 +2,8 @@ const DynamoDB = require("../src/db");
 const { createContract, takeSnapshot } = require("../src/eth");
 const { shuffle } = require("../src/arrays");
 
+const MAX_CONCURRENCY = 200
+
 async function fetchPrizes(db, batch) {
   // Fetch list of prizes
   const result = await db.query('prizes', 'batch', batch)
@@ -74,11 +76,10 @@ async function handle(data, db, contract) {
     }
 
     // Push array of prizes
-    const portions = 250
     const holderKeys = Object.keys(holderBalance)
     const keyCount = holderKeys.length
-    for(let i = 0;i < keyCount;i+=portions) {
-      await Promise.all(holderKeys.slice(i, i+portions).map(async a => {
+    for(let i = 0;i < keyCount;i+=MAX_CONCURRENCY) {
+      await Promise.all(holderKeys.slice(i, i+MAX_CONCURRENCY).map(async a => {
         const batchItem = prizeAssignment[a] ? {
             batch: data.batch,
             address: a,
@@ -92,7 +93,7 @@ async function handle(data, db, contract) {
           }
         await db.put('batches', batchItem)
       }))
-      console.log(`Pushing ${i} to ${i + portions}`)
+      console.log(`Pushing ${i} to ${i + MAX_CONCURRENCY}`)
     }
 
     // Set batch as active    
