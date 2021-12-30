@@ -1,0 +1,16 @@
+name: Preload Batch Testing
+on:
+  workflow_dispatch:
+    inputs:
+      batch:
+        description: 'Batch to preload'
+        required: true
+jobs:
+  batch:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install modules
+      run: npm ci
+    - name: Batch
+      run: node -e 'require("./functions/preload-batch-background").handle({ data:"${{ github.event.inputs.batch }}" })'
