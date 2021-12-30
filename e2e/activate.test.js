@@ -28,7 +28,7 @@ it("activate batch after preload", async () => {
     name: 'Test',
     description: 'Test',
     image: 'test.png',
-    count: 1
+    count: 100
   }, db)
 
   const addresses2 = addresses.slice(0, 4000)

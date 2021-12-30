@@ -55,8 +55,13 @@ async function handle(data, db, contract) {
 
     const prizes = await fetchPrizes(db, data.batch)
 
-    // Shuffle addresses list
+    // Shuffle addresses list 3 times
+    console.log('### Address shuffle round 1 ###')
     let shuffledAddresses = shuffle(flatAddresses)
+    console.log('### Address shuffle round 2 ###')
+    shuffledAddresses = shuffle(shuffledAddresses)
+    console.log('### Address shuffle round 3 ###')
+    shuffledAddresses = shuffle(shuffledAddresses)
 
     // Slice list for extra addresses
     shuffledAddresses = shuffledAddresses.slice(0, prizes.length)

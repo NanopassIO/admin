@@ -1,15 +1,13 @@
-exports.shuffle = function shuffle(array, random) {
-  if(!random) {
-    random = Math.random.bind(Math)
-  }
+const crypto = require("crypto");
 
-  let currentIndex = array.length,  randomIndex;
-  while (currentIndex != 0) {
-    randomIndex = Math.floor(random * currentIndex);
+exports.shuffle = function shuffle(array) {
+  let currentIndex = array.length;
+  while (currentIndex !== 0) {
+    const randomIndex = crypto.randomInt(currentIndex);
     currentIndex--;
 
-    [array[currentIndex], array[randomIndex]] = [
-      array[randomIndex], array[currentIndex]];
+    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    console.log(`${array[currentIndex]} new index is ${randomIndex}`);
   }
 
   return array;
