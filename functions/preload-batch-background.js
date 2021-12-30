@@ -4,7 +4,7 @@ const { createContract, takeSnapshot } = require("../src/eth");
 async function handle(data, db, contract) {
   if(!db) {
     db = new DynamoDB({
-      region: 'us-east-2',
+      region: process.env.REGION,
       accessKeyId: process.env.ACCESS_KEY_ID,
       secretAccessKey: process.env.SECRET_ACCESS_KEY,
     })
