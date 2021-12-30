@@ -1,6 +1,8 @@
 const DynamoDB = require("../src/db");
 const { createContract, takeSnapshot } = require("../src/eth");
 
+const MAX_CONCURRENCY = 200
+
 async function handle(data, db, contract) {
   if(!db) {
     db = new DynamoDB({
@@ -20,11 +22,10 @@ async function handle(data, db, contract) {
     bbCount[address] = bbCount[address] ? bbCount[address] + 1 : 1
   }
 
-  const portions = 250
   const bbAddresses = Object.keys(bbCount)
   const keyCount = bbAddresses.length
-  for(let i = 0;i < keyCount;i+=portions) {
-    await Promise.all(bbAddresses.slice(i, i+portions).map(async a => {
+  for(let i = 0;i < keyCount;i+=MAX_CONCURRENCY) {
+    await Promise.all(bbAddresses.slice(i, i+MAX_CONCURRENCY).map(async a => {
       await db.put('batches', {
         batch: data.batch,
         address: a,
@@ -33,7 +34,7 @@ async function handle(data, db, contract) {
       })
     }))
 
-    console.log(`Pushing ${i} to ${i + portions}`)
+    console.log(`Pushing ${i} to ${i + MAX_CONCURRENCY}`)
   }
 }
 

@@ -1,10 +1,7 @@
 name: Preload Batch Testing
 on:
-  workflow_dispatch:
-    inputs:
-      batch:
-        description: 'Batch to preload'
-        required: true
+  schedule:
+    - cron: '0 4 * * *'
 jobs:
   batch:
     runs-on: ubuntu-latest
@@ -13,7 +10,9 @@ jobs:
     - name: Install modules
       run: npm ci
     - name: Batch
-      run: node -e 'require("./functions/preload-batch-background").handle({ batch:"${{ github.event.inputs.batch }}" })'
+      run: |
+        node -e 'require("./functions/preload-batch-background").handle({ batch:"cron" })'
+        node -e 'require("./functions/activate-batch-background").handle({ batch:"cron" })'
       env:
         ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
         SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
