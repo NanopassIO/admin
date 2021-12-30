@@ -21,7 +21,7 @@ it("activate batch after preload", async () => {
   const contract = new MockContractor(addresses)
   await preload({ batch: 'test' }, db, contract)
 
-  console.log(`Boxes: ${await countBoxes(db, 'test')}`)
+  expect(await countBoxes(db, 'test')).toStrictEqual(5555)
 
   await addPrize({
     batch: 'test',
@@ -35,5 +35,5 @@ it("activate batch after preload", async () => {
   const contract2 = new MockContractor(addresses2)
   await activate({ batch: 'test' }, db, contract2)
 
-  console.log(`Boxes: ${await countBoxes(db, 'test')}`)
+  expect(await countBoxes(db, 'test')).toStrictEqual(4000)
 })
