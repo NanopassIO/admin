@@ -1,29 +1,23 @@
-var AWS = require("aws-sdk")
-const util = require('util')
+const { DynamoDB } = require('../src/db')
 
-AWS.config.update({
-  region: 'us-east-2',
-  accessKeyId: process.env.ACCESS_KEY_ID,
-  secretAccessKey: process.env.SECRET_ACCESS_KEY,
-})
-
-var docClient = new AWS.DynamoDB.DocumentClient();
-const put = util.promisify(docClient.put).bind(docClient)
-var table = 'prizes';
-
-async function handle(data) {
-  await put({
-    TableName: table,
-    Item: {
+async function handle(data, db) {
+  if(!db) {
+    db = new DynamoDB({
+      region: 'us-east-2',
+      accessKeyId: process.env.ACCESS_KEY_ID,
+      secretAccessKey: process.env.SECRET_ACCESS_KEY,
+    })
+  }
+  await db.put('prizes', {
       batch: data.batch,
       name: data.name,
       description: data.description,
       image: data.image,
       count: data.count
-    }
-  })
+    })
 }
 
+exports.handle = handle
 exports.handler = (event, _, callback) => {
   const json = JSON.parse(event.body)  
   if(json.password !== process.env.PASSWORD) {

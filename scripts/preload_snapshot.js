@@ -40,6 +40,6 @@ async function handle(batch) {
   }
 }
 
-handle('xmas').catch(error => {
+handle().catch(error => {
   console.log(error)
 })

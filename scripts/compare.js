@@ -22,7 +22,6 @@ for(const address of Object.keys(preRH)) {
   }
 }
 
-//console.log(JSON.stringify(holders, null, 2))
 console.log(Object.keys(holders).length)
 console.log(Object.keys(holders).reduce((p,c) => p+holders[c], 0))
 

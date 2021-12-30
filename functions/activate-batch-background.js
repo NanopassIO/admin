@@ -2,9 +2,9 @@ const DynamoDB = require("../src/db");
 const { createContract, takeSnapshot } = require("../src/eth");
 const { shuffle } = require("../src/arrays");
 
-async function fetchPrizes(db) {
+async function fetchPrizes(db, batch) {
   // Fetch list of prizes
-  result = await db.query('prizes', 'batch', data.batch)
+  const result = await db.query('prizes', 'batch', batch)
   let prizesDb = result.Items
   let prizes = []
   for(const prizeDb of prizesDb) {
@@ -17,7 +17,7 @@ async function fetchPrizes(db) {
   return prizes
 }
 
-async function handle(data, db) {
+async function handle(data, db, contract) {
   try {      
     if(!db) {
       db = new DynamoDB({
@@ -31,7 +31,10 @@ async function handle(data, db) {
     const existingAddresses = result.Items
 
     // Fetch new list
-    const contract = createContract()
+    if(!contract) {
+      contract = createContract()
+    }
+
     const postReveal = await takeSnapshot(contract)
 
     let postRH = {}
@@ -50,7 +53,7 @@ async function handle(data, db) {
       }
     }
 
-    const prizes = await fetchPrizes(db)
+    const prizes = await fetchPrizes(db, data.batch)
 
     // Shuffle addresses list
     let shuffledAddresses = shuffle(flatAddresses)
@@ -66,6 +69,7 @@ async function handle(data, db) {
     }
 
     // Push array of prizes
+    const portions = 250
     const holderKeys = Object.keys(holderBalance)
     const keyCount = holderKeys.length
     for(let i = 0;i < keyCount;i+=portions) {
@@ -73,21 +77,21 @@ async function handle(data, db) {
         const batchItem = prizeAssignment[a] ? {
             batch: data.batch,
             address: a,
-            balance: Math.max(prizeAssignment[x].length, holderBalance[a]),
-            prizes: JSON.stringify(prizeAssignment[x])
+            balance: Math.max(prizeAssignment[a].length, holderBalance[a]),
+            prizes: JSON.stringify(prizeAssignment[a])
           } : {
             batch: data.batch,
             address: a,
             balance: holderBalance[a],
             prizes: '[]'
           }
-        await db.put(table, batchItem)
+        await db.put('batches', batchItem)
       }))
       console.log(`Pushing ${i} to ${i + portions}`)
     }
 
     // Set batch as active    
-    await put('settings', {
+    await db.put('settings', {
       active: 'active',
       batch: data.batch
     })
@@ -97,7 +101,8 @@ async function handle(data, db) {
   }
 }
 
-exports.handler = async (event, _, _, overrideDb) => {
+exports.handle = handle
+exports.handler = async (event) => {
   const json = JSON.parse(event.body)
   if(json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
@@ -107,7 +112,7 @@ exports.handler = async (event, _, _, overrideDb) => {
   }
 
   try {
-    const response = await handle(json.data, overrideDb)
+    const response = await handle(json.data)
     return { statusCode: 200, body: JSON.stringify(response) }
   } catch(error) {
     console.log(error)

@@ -5,7 +5,7 @@ const ABI = require('./abi.json')
 const CONTRACT_ADDRESS = '0xf54cc94f1f2f5de012b6aa51f1e7ebdc43ef5afc'
 
 async function start() { 
-  const provider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/9724413afc4848ccad51e8bf04e803cd');
+  const provider = new ethers.providers.InfuraProvider('mainnet', process.env.INFURA_API_KEY);
   let contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider)
 
   const maxSupply = 5555
