@@ -1,6 +1,7 @@
 const ABI = require('./abi.json')
 const { ethers } = require('ethers')
 
+const MAX_CONCURRENCY = 200
 const CONTRACT_ADDRESS = '0xf54cc94f1f2f5de012b6aa51f1e7ebdc43ef5afc'
 
 exports.createContract = function () {
@@ -10,11 +11,10 @@ exports.createContract = function () {
 
 exports.takeSnapshot = async function(contract) {
   const maxSupply = 5555
-  const portions = 250
   let snapshot = []
-  for(let i = 0;i < maxSupply;i+=portions) {
-    const section = Array.from(Array(portions), (_,x)=>i+x).filter(x => x < maxSupply)
-    console.log(`Fetching ${i} to ${i + portions}`)
+  for(let i = 0;i < maxSupply;i+=MAX_CONCURRENCY) {
+    const section = Array.from(Array(MAX_CONCURRENCY), (_,x)=>i+x).filter(x => x < maxSupply)
+    console.log(`Fetching ${i} to ${i + MAX_CONCURRENCY}`)
     snapshot = snapshot.concat(await Promise.all(section.map(async x => {
       return await contract.ownerOf(x)
     })))
