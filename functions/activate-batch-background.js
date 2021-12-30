@@ -1,68 +1,41 @@
-var AWS = require("aws-sdk")
-const { ethers } = require('ethers')
-const ABI = require('./abi.json')
-const util = require('util')
+const DynamoDB = require("../src/db");
+const { createContract, takeSnapshot } = require("../src/eth");
+const { shuffle } = require("../src/arrays");
 
-const CONTRACT_ADDRESS = '0xf54cc94f1f2f5de012b6aa51f1e7ebdc43ef5afc'
-const provider = new ethers.providers.InfuraProvider('mainnet', process.env.INFURA_API_KEY)
-const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider)
-
-AWS.config.update({
-  region: 'us-east-2',
-  accessKeyId: process.env.ACCESS_KEY_ID,
-  secretAccessKey: process.env.SECRET_ACCESS_KEY,
-})
-
-var docClient = new AWS.DynamoDB.DocumentClient();
-const query = util.promisify(docClient.query).bind(docClient)
-const put = util.promisify(docClient.put).bind(docClient)
-var table = 'batches';
-
-function shuffle(array) {
-  let currentIndex = array.length,  randomIndex;
-
-  // While there remain elements to shuffle...
-  while (currentIndex != 0) {
-
-    // Pick a remaining element...
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex--;
-
-    // And swap it with the current element.
-    [array[currentIndex], array[randomIndex]] = [
-      array[randomIndex], array[currentIndex]];
+async function fetchPrizes(db, batch) {
+  // Fetch list of prizes
+  const result = await db.query('prizes', 'batch', batch)
+  let prizesDb = result.Items
+  let prizes = []
+  for(const prizeDb of prizesDb) {
+    const prizeCount = parseInt(prizeDb.count)
+    for(let i = 0;i < prizeCount;i++) {
+      prizes.push(prizeDb)
+    }
   }
 
-  return array;
+  return prizes
 }
 
-async function handle(data) {
-  try {
-    // Get existing address list
-    var params = {
-      TableName : table,
-      ExpressionAttributeNames:{
-          "#b": "batch"
-      },
-      ExpressionAttributeValues: {
-          ":batch": data.batch
-      },
-      KeyConditionExpression: "#b = :batch"
-    };
-    let result = await query(params);
+async function handle(data, db, contract) {
+  try {      
+    if(!db) {
+      db = new DynamoDB({
+        region: 'us-east-2',
+        accessKeyId: process.env.ACCESS_KEY_ID,
+        secretAccessKey: process.env.SECRET_ACCESS_KEY,
+      })
+    }
+
+    let result = await db.query('batches', 'batch', data.batch)
     const existingAddresses = result.Items
 
     // Fetch new list
-    const maxSupply = 5555
-    const portions = 250
-    let postReveal = []
-    for(let i = 0;i < maxSupply;i+=portions) {
-      const section = Array.from(Array(portions), (_,x)=>i+x).filter(x => x < maxSupply)
-      console.log(`Fetching ${i} to ${i + portions}`)
-      postReveal = postReveal.concat(await Promise.all(section.map(async x => {
-        return await contract.ownerOf(x)
-      })))
+    if(!contract) {
+      contract = createContract()
     }
+
+    const postReveal = await takeSnapshot(contract)
 
     let postRH = {}
     for(const address of postReveal) {
@@ -70,43 +43,25 @@ async function handle(data) {
     }
 
     // Compare lists
-    const min = (x,y) => x > y ? y : x
-
     let flatAddresses = []
     const holderBalance = {}
     for(const account of existingAddresses) {
-      const count = min(account.balance ?? 0, postRH[account.address] ?? 0)
-      if(count > 0) {
-        holderBalance[account.address] = count
-        for(let i = 0;i < count;i++) {
-          flatAddresses.push(account.address)
-        }
+      const count = Math.min(account.balance ?? 0, postRH[account.address] ?? 0)
+      holderBalance[account.address] = count
+      for(let i = 0;i < count;i++) {
+        flatAddresses.push(account.address)
       }
     }
 
-    // Fetch list of prizes
-    params = {
-      TableName : 'prizes',
-      ExpressionAttributeNames:{
-          "#b": "batch"
-      },
-      ExpressionAttributeValues: {
-          ":batch": data.batch
-      },
-      KeyConditionExpression: "#b = :batch"
-    };
-    result = await query(params);
-    let prizesDb = result.Items
-    let prizes = []
-    for(const prizeDb of prizesDb) {
-      const prizeCount = parseInt(prizeDb.count)
-      for(let i = 0;i < prizeCount;i++) {
-        prizes.push(prizeDb)
-      }
-    }
+    const prizes = await fetchPrizes(db, data.batch)
 
-    // Shuffle addresses list
+    // Shuffle addresses list 3 times
+    console.log('### Address shuffle round 1 ###')
     let shuffledAddresses = shuffle(flatAddresses)
+    console.log('### Address shuffle round 2 ###')
+    shuffledAddresses = shuffle(shuffledAddresses)
+    console.log('### Address shuffle round 3 ###')
+    shuffledAddresses = shuffle(shuffledAddresses)
 
     // Slice list for extra addresses
     shuffledAddresses = shuffledAddresses.slice(0, prizes.length)
@@ -118,65 +73,54 @@ async function handle(data) {
       prizeAssignment[shuffledAddresses[i]] = [...(val ? val : []), prizes[i].name]
     }
 
-    const max = (a,b) => a > b ? a : b
-
     // Push array of prizes
+    const portions = 250
     const holderKeys = Object.keys(holderBalance)
     const keyCount = holderKeys.length
     for(let i = 0;i < keyCount;i+=portions) {
-      await Promise.all(holderKeys.slice(i, i+portions).map(async x => {
-        const params = {
-          TableName: table,
-          Item: prizeAssignment[x] ? {
+      await Promise.all(holderKeys.slice(i, i+portions).map(async a => {
+        const batchItem = prizeAssignment[a] ? {
             batch: data.batch,
-            address: x,
-            balance: max(prizeAssignment[x].length, holderBalance[x]),
-            prizes: JSON.stringify(prizeAssignment[x])
+            address: a,
+            balance: Math.max(prizeAssignment[a].length, holderBalance[a]),
+            prizes: JSON.stringify(prizeAssignment[a])
           } : {
             batch: data.batch,
-            address: x,
-            balance: holderBalance[x],
+            address: a,
+            balance: holderBalance[a],
             prizes: '[]'
           }
-        }
-
-        // console.log(params)
-        // console.log(x)
-        await put(params)
+        await db.put('batches', batchItem)
       }))
       console.log(`Pushing ${i} to ${i + portions}`)
     }
 
-
-    // Set batch as active
-    var params = {
-      TableName: 'settings',
-      Item: {
-        active: 'active',
-        batch: data.batch
-      }
-    }
-    
-    await put(params)
+    // Set batch as active    
+    await db.put('settings', {
+      active: 'active',
+      batch: data.batch
+    })
   } catch(e) {
     console.log(e.message)
     throw e
   }
 }
 
-exports.handler = (event, _, callback) => {
+exports.handle = handle
+exports.handler = async (event) => {
   const json = JSON.parse(event.body)
   if(json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
-    return callback(null, {
+    return {
       statusCode: 401
-    })
+    }
   }
 
-  handle(json.data).then(response => {
-    return callback(null, { statusCode: 200, body: JSON.stringify(response) })
-  }).catch(error => {
+  try {
+    const response = await handle(json.data)
+    return { statusCode: 200, body: JSON.stringify(response) }
+  } catch(error) {
     console.log(error)
-    return callback(null, { statusCode: 500, body: JSON.stringify(error) })
-  })
+    return { statusCode: 500, body: JSON.stringify(error) }
+  }
 }
