@@ -14,3 +14,8 @@ jobs:
       run: npm ci
     - name: Batch
       run: node -e 'require("./functions/preload-batch-background").handle({ data:"${{ github.event.inputs.batch }}" })'
+      env:
+        ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
+        SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
+        INFURA_API_KEY: ${{ secrets.TESTING_INFURA_API_KEY }}
+        REGION: ${{ secrets.REGION_TESTING }}

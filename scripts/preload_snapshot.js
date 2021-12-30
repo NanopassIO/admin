@@ -4,7 +4,7 @@ const util = require('util')
 const addresses = require('../output/snapshot_prereveal.json')
 
 AWS.config.update({
-  region: 'us-east-2',
+  region: process.env.REGION,
   accessKeyId: process.env.ACCESS_KEY_ID,
   secretAccessKey: process.env.SECRET_ACCESS_KEY,
 })

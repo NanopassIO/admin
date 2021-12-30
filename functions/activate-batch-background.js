@@ -21,7 +21,7 @@ async function handle(data, db, contract) {
   try {      
     if(!db) {
       db = new DynamoDB({
-        region: 'us-east-2',
+        region: process.env.REGION,
         accessKeyId: process.env.ACCESS_KEY_ID,
         secretAccessKey: process.env.SECRET_ACCESS_KEY,
       })
