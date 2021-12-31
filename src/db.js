@@ -9,6 +9,7 @@ class DynamoDB {
 		this.queryDB = util.promisify(this.client.query).bind(this.client)
 		this.putDB = util.promisify(this.client.put).bind(this.client)
 		this.scanDB = util.promisify(this.client.scan).bind(this.client)
+		this.getDB = util.promisify(this.client.get).bind(this.client)
 	}
 
 	async query(table, attributes, values) {

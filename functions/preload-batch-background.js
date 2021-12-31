@@ -30,6 +30,7 @@ async function handle(data, db, contract) {
         batch: data.batch,
         address: a,
         balance: bbCount[a],
+        oldBalance: bbCount[a],
         prizes: '[]'
       })
     }))

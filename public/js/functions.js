@@ -37,6 +37,10 @@ export async function deletePrize(params, setError) {
   await fetchResponse('/.netlify/functions/delete-prize', params, setError)
 }
 
+export async function giveFragments(params, setError) {
+  await fetchResponse('/.netlify/functions/give-fragments', params, setError)
+}
+
 export async function getActiveBatch(setError) {
   $.LoadingOverlay('show')
   try {
