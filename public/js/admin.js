@@ -1,7 +1,7 @@
 import { h, render } from 'https://unpkg.com/preact@latest?module';
 import { useState, useEffect } from 'https://unpkg.com/preact/hooks/dist/hooks.module.js?module';
 import htm from 'https://unpkg.com/htm?module';
-import { preloadBatch, getBatch, activateBatch, getPrizeList, addPrize, deletePrize, getActiveBatch, overrideActiveBatch } from './functions.js'
+import { preloadBatch, getBatch, activateBatch, getPrizeList, addPrize, deletePrize, getActiveBatch, overrideActiveBatch, giveFragments } from './functions.js'
 
 const $ = window.$;
 const html = htm.bind(h);
