@@ -1,3 +1,4 @@
+const util = require('util')
 var AWS = require("aws-sdk")
 
 class DynamoDB {
@@ -21,12 +22,12 @@ class DynamoDB {
 
 		return await this.queryDB({
 			TableName: table,
-			ExpressionAttributeNames: attributes.map(a => ({
+			ExpressionAttributeNames: Object.assign({}, ...attributes.map(a => ({
 				[`#${a.slice(1, -1)}`]: a
-			})),
-			ExpressionAttributeValues: attributes.map((a, i) => ({
+			}))),
+			ExpressionAttributeValues: Object.assign({}, ...attributes.map((a, i) => ({
 				[`:${a}`]: values[i]
-			})),
+			}))),
 			KeyConditionExpression: attributes.map(a => `#${a.slice(1, -1)} = :${a}`)
 				.join(' AND ')
 		})

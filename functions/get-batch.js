@@ -1,33 +1,14 @@
-var AWS = require("aws-sdk")
-const util = require('util')
+const DynamoDB = require("../src/db");
 
-AWS.config.update({
+const db = new DynamoDB({
   region: process.env.REGION,
   accessKeyId: process.env.ACCESS_KEY_ID,
   secretAccessKey: process.env.SECRET_ACCESS_KEY,
 })
 
-var docClient = new AWS.DynamoDB.DocumentClient();
-var table = 'batches';
-
 async function handle(data) {
-  var params = {
-    TableName : table,
-    ExpressionAttributeNames:{
-        "#b": "batch"
-    },
-    ExpressionAttributeValues: {
-        ":batch": data.batch
-    },
-    KeyConditionExpression: "#b = :batch"
-  };
-  console.log(params)
-
   try {
-    const query = util.promisify(docClient.query).bind(docClient)
-    const result = await query(params);
-//    console.log(result)
-    return result
+    return await db.query('batches', 'batch', data.batch)
   } catch(e) {
     console.log(e.message)
   }

@@ -11,10 +11,12 @@ jobs:
       run: npm ci
     - name: Batch
       run: |
-        node -e 'require("./functions/preload-batch-background").handle({ batch:"cron" })'
-        node -e 'require("./functions/activate-batch-background").handle({ batch:"cron" })'
+        node -e "require(\"./functions/activate-batch-background\").handle({ batch:\"$LAST_BATCH\" })"
+        node -e "require(\"./functions/preload-batch-background\").handle({ batch:\"$NEXT_BATCH\" })"
       env:
         ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
         SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
         INFURA_API_KEY: ${{ secrets.TESTING_INFURA_API_KEY }}
         REGION: ${{ secrets.REGION_TESTING }}
+        LAST_BATCH: testing
+        NEXT_BATCH: nye
