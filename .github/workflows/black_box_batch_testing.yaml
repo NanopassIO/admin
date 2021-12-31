@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-name: Preload Batch Testing
-=======
 name: Black Box Batch Testing
->>>>>>> a2abccb0cfeb40630eef7befc35363d408de58a0
 on:
   schedule:
     - cron: '0 4 * * *'
@@ -22,8 +18,5 @@ jobs:
         SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
         INFURA_API_KEY: ${{ secrets.TESTING_INFURA_API_KEY }}
         REGION: ${{ secrets.REGION_TESTING }}
-<<<<<<< HEAD
         LAST_BATCH: testing
         NEXT_BATCH: nye
-=======
->>>>>>> a2abccb0cfeb40630eef7befc35363d408de58a0
