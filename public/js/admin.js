@@ -121,6 +121,22 @@ function App () {
       class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
       Delete Prize
     </button><br/><br/>
+    <h1>User Management</h1>
+    <label for="userAddress">Address:</label>
+    <input type="userAddress" id="userAddress" name="userAddress" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/>
+    <label for="fragmentAmount">Fragment Amount:</label>
+    <input type="fragmentAmount" id="fragmentAmount" name="fragmentAmount" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/>
+    <button id="click"
+      onClick=${() => giveFragments({
+            password: $('#password').val(),
+            data: {
+              address: $('#userAddress').val(),
+              amount: $('#fragmentAmount').val()
+            }
+          }, setError)}
+      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      Give Fragments
+    </button><br/><br/>
   `;
 }
 

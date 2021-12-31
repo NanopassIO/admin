@@ -1,5 +1,6 @@
 name: Black Box Batch Testing
 on:
+  workflow_dispatch
   schedule:
     - cron: '0 4 * * *'
 jobs:
