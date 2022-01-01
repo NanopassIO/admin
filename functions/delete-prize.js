@@ -1,4 +1,3 @@
-var AWS = require("aws-sdk")
 const DynamoDB = require("../src/db")
 
 const db = new DynamoDB({

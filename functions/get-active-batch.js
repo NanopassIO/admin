@@ -18,7 +18,6 @@ async function handle() {
     })
     
     const settings = settingsItems.Items[0]
-//    console.log(result)
     return settings
   } catch(e) {
     console.log(e.message)
