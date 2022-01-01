@@ -26,7 +26,6 @@ async function handle(data) {
   try {
     const query = util.promisify(docClient.query).bind(docClient)
     const result = await query(params);
-//    console.log(result)
     return result
   } catch(e) {
     console.log(e.message)

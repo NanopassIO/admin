@@ -1,6 +1,7 @@
 /dist
 /output
 /node_modules
+/local_scripts
 .env
 # Local Netlify folder
 .netlify

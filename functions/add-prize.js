@@ -1,4 +1,4 @@
-const { DynamoDB } = require('../src/db')
+const DynamoDB = require('../src/db')
 
 async function handle(data, db) {
   if(!db) {
