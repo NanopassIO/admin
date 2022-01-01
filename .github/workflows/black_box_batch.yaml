@@ -1,0 +1,30 @@
+name: Black Box Batch
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 4 * * 1'
+jobs:
+  batch:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install modules
+      run: npm ci
+    - name: Activate Batch
+      run: |
+        node -e "require(\"./functions/activate-batch-background\").handle({ batch:\"$LAST_BATCH\" })"
+      env:
+        ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
+        SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
+        INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}
+        REGION: ${{ secrets.REGION }}
+        LAST_BATCH: nye
+    - name: Preload Next Batch
+      run: |
+        node -e "require(\"./functions/preload-batch-background\").handle({ batch:\"$NEXT_BATCH\" })"
+      env:
+        ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
+        SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
+        INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}
+        REGION: ${{ secrets.REGION }}
+        NEXT_BATCH: batch-0
