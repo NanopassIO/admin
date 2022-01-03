@@ -2,7 +2,7 @@ name: Black Box Batch
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 4 * * 1'
+    - cron: '55 3 * * 1'
 jobs:
   batch:
     runs-on: ubuntu-latest
