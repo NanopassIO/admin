@@ -4,6 +4,8 @@ import htm from 'https://unpkg.com/htm?module';
 import { preloadBatch, getBatch, activateBatch, getPrizeList, 
   addPrize, deletePrize, getActiveBatch, overrideActiveBatch, 
   giveFragments, getAccounts } from './functions.js'
+import { toChecksumAddress } from 'ethereum-checksum-address'
+  
 
 const $ = window.$;
 const html = htm.bind(h);
@@ -132,7 +134,7 @@ function App () {
       onClick=${() => giveFragments({
             password: $('#password').val(),
             data: {
-              address: $('#userAddress').val(),
+              address: toChecksumAddress($('#userAddress').val()),
               amount: $('#fragmentAmount').val()
             }
           }, setError)}
