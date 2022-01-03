@@ -1,4 +1,5 @@
 const DynamoDB = require("../src/db")
+const { toChecksumAddress } = require('ethereum-checksum-address')
 
 const db = new DynamoDB({
   region: process.env.REGION,
@@ -7,8 +8,10 @@ const db = new DynamoDB({
 })
 
 async function handle(data) {
+  const address = toChecksumAddress(data.address)
+
   let account = {
-    address: data.address,
+    address: address,
     inventory: '[]',
     fragments: 0
   }
@@ -16,7 +19,7 @@ async function handle(data) {
   const fetchedAccount = (await db.getDB({
     TableName : 'accounts',
     Key: {
-      address: data.address
+      address: address
     }
   })).Item
 
