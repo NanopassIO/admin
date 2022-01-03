@@ -3,7 +3,7 @@ import { useState, useEffect } from 'https://unpkg.com/preact/hooks/dist/hooks.m
 import htm from 'https://unpkg.com/htm?module';
 import { preloadBatch, getBatch, activateBatch, getPrizeList, 
   addPrize, deletePrize, getActiveBatch, overrideActiveBatch, 
-  giveFragments, getAccounts } from './functions.js'  
+  giveFragments, getAccounts } from './functions.js'
 
 const $ = window.$;
 const html = htm.bind(h);
