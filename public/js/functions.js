@@ -110,3 +110,23 @@ export async function getPrizeList(params, setError) {
     $.LoadingOverlay('hide')
   }
 }
+
+export async function getAccounts(params, setError) {
+  $.LoadingOverlay('show')
+  try {
+    const response = await fetch('/.netlify/functions/get-accounts', {
+      body: JSON.stringify(params),
+      method: 'POST'
+    })
+
+    const json = await response.json()
+    const csv = convertToCsv(json.Items)
+
+    const uriContent = "data:text/csv," + encodeURIComponent(csv);
+    window.open(uriContent, 'accounts.csv');
+  } catch(e) {
+    setError(e.message) 
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}

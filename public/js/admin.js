@@ -1,7 +1,9 @@
 import { h, render } from 'https://unpkg.com/preact@latest?module';
 import { useState, useEffect } from 'https://unpkg.com/preact/hooks/dist/hooks.module.js?module';
 import htm from 'https://unpkg.com/htm?module';
-import { preloadBatch, getBatch, activateBatch, getPrizeList, addPrize, deletePrize, getActiveBatch, overrideActiveBatch, giveFragments } from './functions.js'
+import { preloadBatch, getBatch, activateBatch, getPrizeList, 
+  addPrize, deletePrize, getActiveBatch, overrideActiveBatch, 
+  giveFragments, getAccounts } from './functions.js'
 
 const $ = window.$;
 const html = htm.bind(h);
@@ -136,6 +138,13 @@ function App () {
           }, setError)}
       class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
       Give Fragments
+    </button><br/><br/>
+    <button id="click"
+      onClick=${() => getAccounts({
+            password: $('#password').val()
+      }, setError)}
+      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      Get Accounts
     </button><br/><br/>
   `;
 }
