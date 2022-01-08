@@ -120,7 +120,11 @@ export async function getAccounts(params, setError) {
     })
 
     const json = await response.json()
-    const csv = convertToCsv(json.Items)
+    const converted = json.Items.map(x => ({
+      ...x,
+      inventory: JSON.parse(x.inventory ? x.inventory : '[]').join('+')
+    }))
+    const csv = convertToCsv(converted, ['address', 'discord', 'fragments', 'inventory'])
 
     const uriContent = "data:text/csv," + encodeURIComponent(csv);
     window.open(uriContent, 'accounts.csv');
