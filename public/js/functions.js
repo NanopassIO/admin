@@ -122,7 +122,7 @@ export async function getAccounts(params, setError) {
     const json = await response.json()
     const converted = json.Items.map(x => ({
       ...x,
-      inventory: JSON.parse(x.inventory ? x.inventory : '[]').join('+')
+      inventory: JSON.parse(x.inventory ? x.inventory : '[]').map(y => y.name).join('+')
     }))
     const csv = convertToCsv(converted, ['address', 'discord', 'fragments', 'inventory'])
 
