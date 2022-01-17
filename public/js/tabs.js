@@ -1,3 +1,7 @@
+export function openDefaultTab(tabButton) {
+  document.getElementById(tabButton).click();
+}
+
 export function tabFunction(tabButton, tabName) {
   //tabButton parameter is to get the id of the TAB BUTTON for the purpose of adding an active class on click
   //tabName parameter is to get the id of the TAB CONTENT div for the purpose of changing display style to block

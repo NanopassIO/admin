@@ -4,7 +4,7 @@ import htm from 'https://unpkg.com/htm?module';
 import { preloadBatch, getBatch, activateBatch, getPrizeList, 
   addPrize, deletePrize, getActiveBatch, overrideActiveBatch, 
   giveFragments, getAccounts } from './functions.js';
-import { tabFunction } from './tabs.js';
+import { tabFunction,openDefaultTab } from './tabs.js';
 
 const $ = window.$;
 const html = htm.bind(h);
@@ -20,7 +20,6 @@ function App () {
         setActiveBatch(settings.batch);
        });
   }, [activeBatch]);
-  
   return html`
     <label for="password">Password:</label>
     <input value="" type="password" id="password" name="password" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/><br/><br/>
@@ -199,3 +198,4 @@ function App () {
 }
 
 render(html`<${App} />`, $('#content').get(0))
+openDefaultTab("bm-button");
