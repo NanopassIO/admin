@@ -87,7 +87,7 @@ export async function getBatch(params, setError) {
     //console.log(JSON.stringify(json, null, 2))
     const converted = json.Items.map(x => ({
       ...x,
-      address: performAddressReplacement(address),
+      address: performAddressReplacement(x.address),
       prizes: JSON.parse(x.prizes ? x.prizes : '[]').join('+'),
       claimed: JSON.parse(x.claimed ? x.claimed : '[]').join('+')
     }))
@@ -133,7 +133,7 @@ export async function getAccounts(params, setError) {
     const json = await response.json()
     const converted = json.Items.map(x => ({
       ...x,
-      address: performAddressReplacement(address),
+      address: performAddressReplacement(x.address),
       inventory: JSON.parse(x.inventory ? x.inventory : '[]').map(y => y.name).join('+')
     }))
     const csv = convertToCsv(converted, ['address', 'discord', 'fragments', 'inventory'])
