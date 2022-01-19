@@ -1,7 +1,9 @@
 const $ = window.$;
 
+// This is for Skvlpunks DAO, since they cannot claim prizes through the DAO,
+// we provide an alternative address for prizes for them.
 const ADDRESS_MAPPING = {
-  '0xcda2e4b965eca883415107b624e971c4cefc4d8c': '0xEfEE7fD9aF43945E7b7D9655592600A6a63eFf0D'
+  '0xcdA2E4b965eCa883415107b624e971c4Cefc4D8C': '0xEfEE7fD9aF43945E7b7D9655592600A6a63eFf0D'
 }
 
 async function fetchResponse(url, params, setError) {
