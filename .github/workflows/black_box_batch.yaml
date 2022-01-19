@@ -18,7 +18,7 @@ jobs:
         SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
         INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}
         REGION: ${{ secrets.REGION_MAIN }}
-        LAST_BATCH: nye
+        LAST_BATCH: batch-1
     - name: Preload Next Batch
       run: |
         node -e "require(\"./functions/preload-batch-background\").handle({ batch:\"$NEXT_BATCH\" })"
@@ -27,4 +27,4 @@ jobs:
         SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
         INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}
         REGION: ${{ secrets.REGION_MAIN }}
-        NEXT_BATCH: batch-0
+        NEXT_BATCH: batch-2

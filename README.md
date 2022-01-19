@@ -19,3 +19,7 @@ The action runs are publically verifiable and the logs are viewable under the Ac
 ## Architecture
 
 The system mainly consists of ether.js to communicate with the smart contract side, and a DynamoDB backend to store info about accounts, batches and prizes.
+
+## Front-end
+
+To run the front-end serve the `public` directory, it is all static HTML and compatible with modern browsers without any build steps.
