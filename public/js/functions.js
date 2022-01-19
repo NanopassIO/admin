@@ -1,5 +1,9 @@
 const $ = window.$;
 
+const ADDRESS_MAPPING = {
+  '0xcda2e4b965eca883415107b624e971c4cefc4d8c': '0xEfEE7fD9aF43945E7b7D9655592600A6a63eFf0D'
+}
+
 async function fetchResponse(url, params, setError) {
   $.LoadingOverlay('show')
   try {
@@ -65,6 +69,10 @@ function convertToCsv(items, overrideHeaders) {
   ].join('\r\n')
 }
 
+function performAddressReplacement(address) {
+  return ADDRESS_MAPPING[address] ? ADDRESS_MAPPING[address] : address
+}
+
 export async function getBatch(params, setError) {
   $.LoadingOverlay('show')
   try {
@@ -77,6 +85,7 @@ export async function getBatch(params, setError) {
     //console.log(JSON.stringify(json, null, 2))
     const converted = json.Items.map(x => ({
       ...x,
+      address: performAddressReplacement(address),
       prizes: JSON.parse(x.prizes ? x.prizes : '[]').join('+'),
       claimed: JSON.parse(x.claimed ? x.claimed : '[]').join('+')
     }))
@@ -122,6 +131,7 @@ export async function getAccounts(params, setError) {
     const json = await response.json()
     const converted = json.Items.map(x => ({
       ...x,
+      address: performAddressReplacement(address),
       inventory: JSON.parse(x.inventory ? x.inventory : '[]').map(y => y.name).join('+')
     }))
     const csv = convertToCsv(converted, ['address', 'discord', 'fragments', 'inventory'])
