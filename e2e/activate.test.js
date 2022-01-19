@@ -3,6 +3,8 @@ const activate = require('../functions/activate-batch-background').handle
 const addPrize = require('../functions/add-prize').handle
 const { MockDB, MockContractor } = require('./testing')
 
+var crypto = require('crypto')
+
 async function countBoxes(db, batch) {
   const addresses = await db.query('batches', 'batch', batch)
   let boxCount = 0
@@ -15,7 +17,9 @@ async function countBoxes(db, batch) {
 it("activate batch after preload", async () => {
   const addresses = []
   for(let i = 0;i < 5555;i++) {
-    addresses.push(`address${i}`)
+    var id = crypto.randomBytes(20).toString('hex');
+    var testAddress = "0x"+id
+    addresses.push(testAddress)
   }
   const db = new MockDB()
   const contract = new MockContractor(addresses)
