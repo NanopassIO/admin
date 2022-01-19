@@ -1,8 +1,8 @@
-name: Black Box Batch Testing
+name: Black Box Batch Testing Activate
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 4 * * *'
+    - cron: '55 3 * * *'
 jobs:
   batch:
     runs-on: ubuntu-latest
@@ -19,12 +19,3 @@ jobs:
         INFURA_API_KEY: ${{ secrets.TESTING_INFURA_API_KEY }}
         REGION: ${{ secrets.REGION_TESTING }}
         LAST_BATCH: testing
-    - name: Preload Next Batch
-      run: |
-        node -e "require(\"./functions/preload-batch-background\").handle({ batch:\"$NEXT_BATCH\" })"
-      env:
-        ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
-        SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
-        INFURA_API_KEY: ${{ secrets.TESTING_INFURA_API_KEY }}
-        REGION: ${{ secrets.REGION_TESTING }}
-        NEXT_BATCH: nye
