@@ -10,8 +10,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: SendGrid
+      working-directory: .github/workflows/scripts
       run: |
-        cd ./scripts
         npm ci
         node sendgrid.js
       env:
