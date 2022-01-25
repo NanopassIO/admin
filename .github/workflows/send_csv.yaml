@@ -1,0 +1,18 @@
+name: Black Box Send CSV File
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 * * *'
+    - cron: '0 16 * * *'
+jobs:
+  batch:
+    runs-on: ubuntu-latest
+    steps:
+    - name: SendGrid
+      uses: peter-evans/sendgrid-action@v1
+      env:
+        SENDGRID_API_KEY: ${{ secrets.SENDGRID }}
+        EMAILS: ${{ secrets.EMAILS }}
+        ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
+        SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
+        REGION: ${{ secrets.REGION_TESTING }}
