@@ -1,4 +1,8 @@
-const $ = window.$;
+let $;
+
+if(typeof window !== 'undefined') {
+  $ = window.$;
+}
 
 // This is for Skvlpunks DAO, since they cannot claim prizes through the DAO,
 // we provide an alternative address for prizes for them.
@@ -75,6 +79,16 @@ function performAddressReplacement(address) {
   return ADDRESS_MAPPING[address] ? ADDRESS_MAPPING[address] : address
 }
 
+export function generateBatchCsv(json) {
+  const converted = json.Items.map(x => ({
+    ...x,
+    address: performAddressReplacement(x.address),
+    prizes: JSON.parse(x.prizes ? x.prizes : '[]').join('+'),
+    claimed: JSON.parse(x.claimed ? x.claimed : '[]').join('+')
+  }))
+  return convertToCsv(converted, ['address', 'balance', 'prizes', 'claimed'])
+}
+
 export async function getBatch(params, setError) {
   $.LoadingOverlay('show')
   try {
@@ -85,13 +99,7 @@ export async function getBatch(params, setError) {
 
     const json = await response.json()
     //console.log(JSON.stringify(json, null, 2))
-    const converted = json.Items.map(x => ({
-      ...x,
-      address: performAddressReplacement(x.address),
-      prizes: JSON.parse(x.prizes ? x.prizes : '[]').join('+'),
-      claimed: JSON.parse(x.claimed ? x.claimed : '[]').join('+')
-    }))
-    const csv = convertToCsv(converted, ['address', 'balance', 'prizes', 'claimed'])
+    const csv = generateBatchCsv(json)
 
     const uriContent = "data:text/csv," + encodeURIComponent(csv);
     window.open(uriContent, 'batch.csv');
