@@ -2,7 +2,7 @@
 
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-const { generateBatchCsv } = require("../public/js/functions")
+const { generateBatchCsv } = require("../../../public/js/functions")
 
 require("./functions/get-active-batch").handle(batch => {
   require("./functions/get-batch").handle({ batch: batch.batch }).then(rawData => {
