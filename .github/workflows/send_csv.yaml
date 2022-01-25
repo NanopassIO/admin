@@ -10,7 +10,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: SendGrid
-      uses: peter-evans/sendgrid-action@v1
+      run: |
+        cd ./scripts
+        npm ci
+        node sendgrid.js
       env:
         SENDGRID_API_KEY: ${{ secrets.SENDGRID }}
         EMAILS: ${{ secrets.EMAILS }}
