@@ -1,7 +1,7 @@
 import * as sgMail from '@sendgrid/mail';
-import * as getActiveBatch from '../../../functions/get-active-batch';
-import * as getBatch from '../../../functions/get-batch';
-import generateBatchCsv from '../../../public/js/functions'
+import * as getActiveBatch from '../../../../functions/get-active-batch';
+import * as getBatch from '../../../../functions/get-batch';
+import generateBatchCsv from '../../../../public/js/functions'
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
