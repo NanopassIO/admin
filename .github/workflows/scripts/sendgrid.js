@@ -1,11 +1,12 @@
-#! /usr/bin/env node
+import * as sgMail from '@sendgrid/mail';
+import * as getActiveBatch from './functions/get-active-batch';
+import * as getBatch from './functions/get-batch';
+import generateBatchCsv from '../../../public/js/functions'
 
-const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-const { generateBatchCsv } = require("../../../public/js/functions")
 
-require("./functions/get-active-batch").handle(batch => {
-  require("./functions/get-batch").handle({ batch: batch.batch }).then(rawData => {
+getActiveBatch.handle(batch => {
+  getBatch.handle({ batch: batch.batch }).then(rawData => {
     const filename = 'batch.csv',
     fileType = 'text/csv',
     data = generateBatchCsv(rawData);
