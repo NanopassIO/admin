@@ -18,4 +18,4 @@ jobs:
         SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
         INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}
         REGION: ${{ secrets.REGION_MAIN }}
-        NEXT_BATCH: batch-3
+        NEXT_BATCH: batch-4
