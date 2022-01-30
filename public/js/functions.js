@@ -1,7 +1,9 @@
 let $;
+let XLSX;
 
 if(typeof window !== 'undefined') {
   $ = window.$;
+  XLSX = window.XLSX;
 }
 
 // This is for Skvlpunks DAO, since they cannot claim prizes through the DAO,
@@ -66,27 +68,8 @@ export async function getActiveBatch(setError) {
   }
 }
 
-function convertToCsv(items, overrideHeaders) {
-  const replacer = (key, value) => value === null ? '' : value // specify how you want to handle null values here
-  const header = overrideHeaders ?? Object.keys(items[0])
-  return [
-    header.join(','), // header row first
-    ...items.map(row => header.map(fieldName => JSON.stringify(row[fieldName], replacer)).join(','))
-  ].join('\r\n')
-}
-
 function performAddressReplacement(address) {
   return ADDRESS_MAPPING[address] ? ADDRESS_MAPPING[address] : address
-}
-
-export function generateBatchCsv(json) {
-  const converted = json.Items.map(x => ({
-    ...x,
-    address: performAddressReplacement(x.address),
-    prizes: JSON.parse(x.prizes ? x.prizes : '[]').join('+'),
-    claimed: JSON.parse(x.claimed ? x.claimed : '[]').join('+')
-  }))
-  return convertToCsv(converted, ['address', 'balance', 'prizes', 'claimed'])
 }
 
 export async function getBatch(params, setError) {
@@ -99,10 +82,17 @@ export async function getBatch(params, setError) {
 
     const json = await response.json()
     //console.log(JSON.stringify(json, null, 2))
-    const csv = generateBatchCsv(json)
-
-    const uriContent = "data:text/csv," + encodeURIComponent(csv);
-    window.open(uriContent, 'batch.csv');
+    const converted = json.Items.map(x => ({
+      ...x,
+      address: performAddressReplacement(x.address),
+      prizes: JSON.parse(x.prizes ? x.prizes : '[]').join('+'),
+      claimed: JSON.parse(x.claimed ? x.claimed : '[]').join('+')
+    }))
+    
+    const ws = XLSX.utils.json_to_sheet(converted) 
+    const wb = XLSX.utils.book_new() 
+    XLSX.utils.book_append_sheet(wb, ws, 'Batch')
+    XLSX.writeFile(wb, 'Batch.xlsx')
   } catch(e) {
     setError(e.message) 
   } finally {
@@ -118,11 +108,11 @@ export async function getPrizeList(params, setError) {
       method: 'POST'
     })
 
-    const json = await response.json()
-    const csv = convertToCsv(json.Items)
-
-    const uriContent = "data:text/csv," + encodeURIComponent(csv);
-    window.open(uriContent, 'prizes.csv');
+    const json = await response.json()    
+    const ws = XLSX.utils.json_to_sheet(json.Items) 
+    const wb = XLSX.utils.book_new() 
+    XLSX.utils.book_append_sheet(wb, ws, 'Prizes')
+    XLSX.writeFile(wb, 'Prizes.xlsx')
   } catch(e) {
     setError(e.message) 
   } finally {
@@ -145,10 +135,11 @@ export async function getAccounts(params, setError) {
       address: performAddressReplacement(x.address),
       inventory: JSON.parse(x.inventory ? x.inventory : '[]').map(y => y.name).join('+')
     }))
-    const csv = convertToCsv(converted, ['address', 'discord', 'fragments', 'inventory'])
-
-    const uriContent = "data:text/csv," + encodeURIComponent(csv);
-    window.open(uriContent, 'accounts.csv');
+   
+    const ws = XLSX.utils.json_to_sheet(converted) 
+    const wb = XLSX.utils.book_new() 
+    XLSX.utils.book_append_sheet(wb, ws, 'Accounts')
+    XLSX.writeFile(wb, 'Accounts.xlsx')
   } catch(e) {
     setError(e.message) 
   } finally {
@@ -201,12 +192,12 @@ export async function winners(params, search, setError) {
       }
     }
 
-    const csv = convertToCsv(merged, ['prize', 'address', 'discord'])
-
-    const uriContent = "data:text/csv," + encodeURIComponent(csv);
-    window.open(uriContent, `${search}_winners.csv`);
+    const ws = XLSX.utils.json_to_sheet(merged) 
+    const wb = XLSX.utils.book_new() 
+    XLSX.utils.book_append_sheet(wb, ws, 'Winners')
+    XLSX.writeFile(wb, `${search}_winners.xlsx`)
   } catch(e) {
-    setError(e.message) 
+    setError(e.message)
   } finally {
     $.LoadingOverlay('hide')
   }
