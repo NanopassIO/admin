@@ -81,7 +81,6 @@ export async function getBatch(params, setError) {
     })
 
     const json = await response.json()
-    //console.log(JSON.stringify(json, null, 2))
     const converted = json.Items.map(x => ({
       ...x,
       address: performAddressReplacement(x.address),
@@ -89,7 +88,9 @@ export async function getBatch(params, setError) {
       claimed: JSON.parse(x.claimed ? x.claimed : '[]').join('+')
     }))
     
-    const ws = XLSX.utils.json_to_sheet(converted) 
+    const ws = XLSX.utils.json_to_sheet(converted, {
+      header: ['address', 'balance', 'prizes', 'claimed']
+    })
     const wb = XLSX.utils.book_new() 
     XLSX.utils.book_append_sheet(wb, ws, 'Batch')
     XLSX.writeFile(wb, 'Batch.xlsx')
@@ -136,7 +137,9 @@ export async function getAccounts(params, setError) {
       inventory: JSON.parse(x.inventory ? x.inventory : '[]').map(y => y.name).join('+')
     }))
    
-    const ws = XLSX.utils.json_to_sheet(converted) 
+    const ws = XLSX.utils.json_to_sheet(converted, {
+      header: ['address', 'discord', 'fragments', 'inventory']
+    }) 
     const wb = XLSX.utils.book_new() 
     XLSX.utils.book_append_sheet(wb, ws, 'Accounts')
     XLSX.writeFile(wb, 'Accounts.xlsx')
