@@ -130,7 +130,7 @@ export async function getAccounts(params, setError) {
     })
 
     const json = await response.json()
-    const converted = json.Items.map(x => ({
+    const converted = json.map(x => ({
       ...x,
       address: performAddressReplacement(x.address),
       inventory: JSON.parse(x.inventory ? x.inventory : '[]').map(y => y.name).join('+')
@@ -155,7 +155,7 @@ export async function winners(params, search, setError) {
       method: 'POST'
     })
 
-    const accountsJson = (await accountsResponse.json()).Items.map(x => ({
+    const accountsJson = (await accountsResponse.json()).map(x => ({
       ...x,
       address: performAddressReplacement(x.address)
     }))
