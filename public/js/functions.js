@@ -130,6 +130,7 @@ export async function getPrizeList(params, setError) {
   }
 }
 
+
 export async function getAccounts(params, setError) {
   $.LoadingOverlay('show')
   try {
@@ -148,6 +149,62 @@ export async function getAccounts(params, setError) {
 
     const uriContent = "data:text/csv," + encodeURIComponent(csv);
     window.open(uriContent, 'accounts.csv');
+  } catch(e) {
+    setError(e.message) 
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
+
+export async function winners(params, search, setError) {
+  $.LoadingOverlay('show')
+  try {
+    const accountsResponse = await fetch('/.netlify/functions/get-accounts', {
+      body: JSON.stringify(params),
+      method: 'POST'
+    })
+
+    const accountsJson = (await accountsResponse.json()).Items.map(x => ({
+      ...x,
+      address: performAddressReplacement(x.address)
+    }))
+   
+    const batchResponse = await fetch('/.netlify/functions/get-batch', {
+      body: JSON.stringify(params),
+      method: 'POST'
+    })
+
+    const batchJson = (await batchResponse.json()).Items.map(x => ({
+      ...x,
+      address: performAddressReplacement(x.address)
+    }))
+
+    const accountByAddress = addr => {
+      return accountsJson.find(a => {
+        return a.address === addr
+      })
+    }
+
+    const merged = []
+    
+    for(const batch of batchJson) {
+      const prizeArray = JSON.parse(batch.claimed ? batch.claimed : '[]')
+      const discord = accountByAddress(batch.address) ? accountByAddress(batch.address).discord : 'Not found'
+      for(const prize of prizeArray) {
+        if(prize.toLowerCase().includes(search)) {
+          merged.push({
+            prize: prize,
+            address: batch.address,
+            discord: discord
+          })
+        }
+      }
+    }
+
+    const csv = convertToCsv(merged, ['prize', 'address', 'discord'])
+
+    const uriContent = "data:text/csv," + encodeURIComponent(csv);
+    window.open(uriContent, `${search}_winners.csv`);
   } catch(e) {
     setError(e.message) 
   } finally {
