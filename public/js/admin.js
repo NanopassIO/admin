@@ -3,11 +3,21 @@ import { useState, useEffect } from 'https://unpkg.com/preact/hooks/dist/hooks.m
 import htm from 'https://unpkg.com/htm?module';
 import { preloadBatch, getBatch, activateBatch, getPrizeList, 
   addPrize, deletePrize, getActiveBatch, overrideActiveBatch, 
-  giveFragments, getAccounts } from './functions.js';
+  giveFragments, getAccounts, winners } from './functions.js';
 import { tabFunction,openDefaultTab } from './tabs.js';
 
 const $ = window.$;
 const html = htm.bind(h);
+
+const lastWeekBatch = batch => {
+  return batch.split('-').map(b => {
+    if(b === 'batch') {
+      return b
+    }
+
+    return `${parseInt(b) - 1}`
+  }).join('-')
+}
 
 function App () {
   const [error, setError] = useState('')
@@ -27,6 +37,10 @@ function App () {
 
     <div class="admin-container">
       <div class="tab">
+        <button class="tablinks" id="wm-button"
+          onClick=${() => tabFunction('wm-button','winner-management')}>
+          Winner Management
+        </button>
         <button class="tablinks" id="bm-button"
           onClick=${() => tabFunction('bm-button','batch-management')}>
           Batch Management
@@ -39,6 +53,52 @@ function App () {
           onClick=${() => tabFunction('um-button','user-management')}>
           User Management
         </button>
+      </div>
+
+      <div id="winner-management" class="tabcontent">
+        <h1>Winner Management</h1><br/>
+        <div>Active Batch: ${activeBatch}</div>
+        <div>Last Weeks Batch: ${lastWeekBatch(activeBatch)}</div><br/>    
+        <button id="click"
+          onClick=${() => winners({
+                password: $('#password').val(),
+                data: {
+                  batch: activeBatch
+                }
+              }, 'wl', setError)}
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Get WL winners for this week
+        </button><br/><br/>
+        <button id="click"
+          onClick=${() => winners({
+                password: $('#password').val(),
+                data: {
+                  batch: activeBatch
+                }
+              }, 'nft', setError)}
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Get NFT winners for this week
+        </button><br/><br/>
+        <button id="click"
+          onClick=${() => winners({
+                password: $('#password').val(),
+                data: {
+                  batch: lastWeekBatch(activeBatch)
+                }
+              }, 'wl', setError)}
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Get WL winners for last week
+        </button><br/><br/>
+        <button id="click"
+          onClick=${() => winners({
+                password: $('#password').val(),
+                data: {
+                  batch: lastWeekBatch(activeBatch)
+                }
+              }, 'nft', setError)}
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Get NFT winners for last week
+        </button><br/><br/>
       </div>
 
       <div id="batch-management" class="tabcontent">
@@ -198,4 +258,4 @@ function App () {
 }
 
 render(html`<${App} />`, $('#content').get(0))
-openDefaultTab("bm-button");
+openDefaultTab("wm-button");
