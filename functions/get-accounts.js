@@ -9,10 +9,21 @@ AWS.config.update({
 
 var docClient = new AWS.DynamoDB.DocumentClient();
 
+const scanTable = async (params) => {
+  const scanResults = [];
+  let items;
+  do{
+      items =  await docClient.scan(params).promise();
+      items.Items.forEach((item) => scanResults.push(item));
+      params.ExclusiveStartKey  = items.LastEvaluatedKey;
+  } while(typeof items.LastEvaluatedKey !== "undefined");
+  
+  return scanResults;
+};
+
 async function handle() {
   try {
-    const scan = util.promisify(docClient.scan).bind(docClient)
-    const result = await scan({
+    const result = await scanTable({
       TableName : 'accounts'
     })
     return result
