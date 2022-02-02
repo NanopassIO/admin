@@ -180,7 +180,7 @@ function App () {
         </div>
         <div class="input-group">
           <label for="prizeDesc">Prize Description:</label>
-          <input type="prizeDesc" id="prizeDesc" name="prizeDesc" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
+          <textarea type="prizeDesc" id="prizeDesc" name="prizeDesc" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
         </div>
         <div class="input-group">
           <label for="prizeImage">Prize Image:</label>
