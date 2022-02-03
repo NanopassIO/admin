@@ -185,7 +185,7 @@ export async function winners(params, search, setError) {
       const prizeArray = JSON.parse(batch.claimed ? batch.claimed : '[]')
       const discord = accountByAddress(batch.address) ? accountByAddress(batch.address).discord : 'Not found'
       for(const prize of prizeArray) {
-        if(prize.toLowerCase().includes(search)) {
+        if(prize.toLowerCase().includes(search) || search === null) {
           merged.push({
             prize: prize,
             address: batch.address,
