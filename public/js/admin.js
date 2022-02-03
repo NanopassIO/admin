@@ -83,6 +83,16 @@ function App () {
           onClick=${() => winners({
                 password: $('#password').val(),
                 data: {
+                  batch: activeBatch
+                }
+              }, null, setError)}
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Get all winners for this week
+        </button><br/><br/>
+        <button id="click"
+          onClick=${() => winners({
+                password: $('#password').val(),
+                data: {
                   batch: lastWeekBatch(activeBatch)
                 }
               }, 'wl', setError)}
@@ -98,6 +108,16 @@ function App () {
               }, 'nft', setError)}
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Get NFT winners for last week
+        </button><br/><br/>
+        <button id="click"
+          onClick=${() => winners({
+                password: $('#password').val(),
+                data: {
+                  batch: lastWeekBatch(activeBatch)
+                }
+              }, null, setError)}
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Get all winners for last week
         </button><br/><br/>
       </div>
 
