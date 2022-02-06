@@ -31,9 +31,17 @@ it("activate batch after preload", async () => {
   expect(await countBoxes(db, 'test')).toStrictEqual(5555)
 
   await addPrize({
-    batch: 'test',
+    batch: 'batch-1',
     name: 'Test',
     description: 'Test',
+    image: 'test.png',
+    count: 100
+  }, db)
+
+  await addPrize({
+    batch: 'batch-1',
+    name: 'Test Wl',
+    description: 'Test Wl',
     image: 'test.png',
     count: 100
   }, db)
