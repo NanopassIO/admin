@@ -20,11 +20,7 @@ async function fetchPrizes(db, batch) {
 }
 
 async function getNextBatch(db) {
-  const settingsItems = await db.scanDB({
-    TableName: 'settings',
-    Limit : 1
-  })
-  
+  const settingsItems = await db.scan('settings', 1)
   const settings = settingsItems.Items[0]
   const batch = settings.batch
 
@@ -53,7 +49,7 @@ function hasDuplicateWl(prizeAssignment) {
   for(const address in prizeAssignment) {
     let existingPrizes = []
     for(const prize of prizeAssignment[address]) {
-      if(prize && prize.name.toLowerCase().includes('wl')) {
+      if(prize && prize.name && prize.name.toLowerCase().includes('wl')) {
         if(existingPrizes.includes(prize.name)) {
           return true
         }

@@ -40,6 +40,13 @@ class DynamoDB {
 			Item: values
 		})
 	}
+
+	async scan(table, limit) {
+		return await this.scanDB({
+      TableName: table,
+      Limit : limit
+		})
+	}
 }
 
 module.exports = DynamoDB
