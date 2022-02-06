@@ -7,8 +7,8 @@ exports.shuffle = function shuffle(array) {
     currentIndex--;
 
     [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-    console.log(`${array[currentIndex]} new index is ${randomIndex}`);
   }
+  console.log(`${array}`);
 
   return array;
 }
