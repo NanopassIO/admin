@@ -37,6 +37,35 @@ async function getNextBatch(db) {
   }).join('-')
 }
 
+// Assign prizes based on addresses list shuffle
+function assignPrizes(shuffledAddresses, prizes) {
+  // Slice list for extra addresses
+  const addresses = shuffledAddresses.slice(0, prizes.length)
+  let prizeAssignment = {}
+  for(let i = 0;i < addresses.length;i++) {
+    const val = prizeAssignment[addresses[i]]
+    prizeAssignment[addresses[i]] = [...(val ? val : []), prizes[i].name]
+  }
+  return prizeAssignment;
+}
+
+function hasDuplicateWl(prizeAssignment) {
+  for(const address in prizeAssignment) {
+    let existingPrizes = []
+    for(const prize of prizeAssignment[address]) {
+      if(prize && prize.name.toLowerCase().includes('wl')) {
+        if(existingPrizes.includes(prize.name)) {
+          return true
+        }
+
+        existingPrizes.push(prize.name)
+      }
+    }
+  }
+
+  return false
+}
+
 async function handle(_, db, contract) {
   try {      
     if(!db) {
@@ -81,18 +110,17 @@ async function handle(_, db, contract) {
     console.log('### Address shuffle round 1 ###')
     let shuffledAddresses = shuffle(flatAddresses)
     console.log('### Address shuffle round 2 ###')
-    shuffledAddresses = shuffle(shuffledAddresses)
-    console.log('### Address shuffle round 3 ###')
-    shuffledAddresses = shuffle(shuffledAddresses)
 
-    // Slice list for extra addresses
-    shuffledAddresses = shuffledAddresses.slice(0, prizes.length)
+    // Keep shuffling until no duplicate WL
+    let prizeAssignment;
+    for(var i = 0;i < 100;i++) {
+      shuffledAddresses = shuffle(shuffledAddresses)
+      console.log(`### Address shuffle round ${i + 3} ###`)
+      prizeAssignment = assignPrizes(shuffledAddresses, prizes)
 
-    // Assign prizes based on addresses list shuffle
-    let prizeAssignment = {}
-    for(let i = 0;i < shuffledAddresses.length;i++) {
-      const val = prizeAssignment[shuffledAddresses[i]]
-      prizeAssignment[shuffledAddresses[i]] = [...(val ? val : []), prizes[i].name]
+      if(!hasDuplicateWl(prizeAssignment)) {
+        break;
+      }
     }
 
     // Push array of prizes
