@@ -20,11 +20,7 @@ async function fetchPrizes(db, batch) {
 }
 
 async function getNextBatch(db) {
-  const settingsItems = await db.scanDB({
-    TableName: 'settings',
-    Limit : 1
-  })
-  
+  const settingsItems = await db.scan('settings', 1)
   const settings = settingsItems.Items[0]
   const batch = settings.batch
 

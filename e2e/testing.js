@@ -57,8 +57,8 @@ class MockDB {
     }
 	}
 
-  async scan(table) {
-		return { Items: Object.values(this.db[table]).flat() }
+  async scan(table, limit) {
+		return { Items: Object.values(this.db[table]).flat().slice(0, limit) }
 	}
 }
 
