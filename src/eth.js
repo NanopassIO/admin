@@ -17,7 +17,9 @@ exports.takeSnapshot = async function(contract) {
     const section = Array.from(Array(MAX_CONCURRENCY), (_,x)=>i+x).filter(x => x < maxSupply)
     console.log(`Fetching ${i} to ${i + MAX_CONCURRENCY}`)
     snapshot = snapshot.concat(await Promise.all(section.map(async x => {
-      return await retry(contract.ownerOf(x))
+      return await retry(async (bail) => {
+        return await contract.ownerOf(x)
+      })
     })))
   }
 
