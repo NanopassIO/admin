@@ -16,9 +16,11 @@ async function countBoxes(db, batch) {
 
 it("activate batch after preload", async () => {
   const addresses = []
-  for(let i = 0;i < 5555;i++) {
+  for(let i = 0;i < 5555;i+=3) {
     var id = crypto.randomBytes(20).toString('hex');
     var testAddress = "0x"+id
+    addresses.push(testAddress)
+    addresses.push(testAddress)
     addresses.push(testAddress)
   }
   const db = new MockDB()
