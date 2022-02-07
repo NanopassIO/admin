@@ -73,6 +73,7 @@ async function handle(_, db, contract) {
     }
 
     const batch = await getNextBatch(db)
+    console.log(`Activating Batch: ${batch}`)
 
     let result = await db.query('batches', 'batch', batch)
     const existingAddresses = result.Items
