@@ -1,5 +1,6 @@
 const ABI = require('./abi.json')
 const { ethers } = require('ethers')
+const retry = require('async-retry')
 
 const MAX_CONCURRENCY = 200
 const CONTRACT_ADDRESS = '0xf54cc94f1f2f5de012b6aa51f1e7ebdc43ef5afc'
@@ -16,7 +17,7 @@ exports.takeSnapshot = async function(contract) {
     const section = Array.from(Array(MAX_CONCURRENCY), (_,x)=>i+x).filter(x => x < maxSupply)
     console.log(`Fetching ${i} to ${i + MAX_CONCURRENCY}`)
     snapshot = snapshot.concat(await Promise.all(section.map(async x => {
-      return await contract.ownerOf(x)
+      return await retry(contract.ownerOf(x))
     })))
   }
 
