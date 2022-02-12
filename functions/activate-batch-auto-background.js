@@ -107,18 +107,23 @@ async function handle(_, db, contract) {
     console.log('### Address shuffle round 1 ###')
     let shuffledAddresses = shuffle(flatAddresses)
     console.log('### Address shuffle round 2 ###')
+    shuffledAddresses = shuffle(shuffledAddresses)
+    console.log('### Address shuffle round 3 ###')
+    shuffledAddresses = shuffle(shuffledAddresses)
+    
+    const prizeAssignment = assignPrizes(shuffledAddresses, prizes)
 
     // Keep shuffling until no duplicate WL
-    let prizeAssignment;
-    for(var i = 0;i < 100;i++) {
-      shuffledAddresses = shuffle(shuffledAddresses)
-      console.log(`### Address shuffle round ${i + 3} ###`)
-      prizeAssignment = assignPrizes(shuffledAddresses, prizes)
+    // let prizeAssignment;
+    // for(var i = 0;i < 100;i++) {
+    //   shuffledAddresses = shuffle(shuffledAddresses)
+    //   console.log(`### Address shuffle round ${i + 3} ###`)
+    //   prizeAssignment = assignPrizes(shuffledAddresses, prizes)
 
-      if(!hasDuplicateWl(prizeAssignment)) {
-        break;
-      }
-    }
+    //   if(!hasDuplicateWl(prizeAssignment)) {
+    //     break;
+    //   }
+    // }
 
     // Push array of prizes
     const holderKeys = Object.keys(holderBalance)
