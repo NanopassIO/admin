@@ -3,7 +3,7 @@ import { useState, useEffect } from 'https://unpkg.com/preact/hooks/dist/hooks.m
 import htm from 'https://unpkg.com/htm?module';
 import { preloadBatch, getBatch, activateBatch, getPrizeList, 
   addPrize, deletePrize, getActiveBatch, overrideActiveBatch, 
-  giveFragments, getAccounts, winners } from './functions.js';
+  giveFragments, getAccounts, winners, giveBalance } from './functions.js';
 import { tabFunction,openDefaultTab } from './tabs.js';
 
 const $ = window.$;
@@ -268,6 +268,21 @@ function App () {
           }, setError)}
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Get Accounts
+        </button><br/><br/>
+        <div class="input-group">
+          <label for="balanceAmount">Give Balance (Testing only):</label>
+          <input type="balanceAmount" id="balanceAmount" name="balanceAmount" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
+        </div><br/><br/>
+        <button id="click"
+          onClick=${() => giveBalance({
+                password: $('#password').val(),
+                data: {
+                  address: $('#userAddress').val(),
+                  amount: $('#balanceAmount').val()
+                }
+          }, setError)}
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Give Balance (Testing Only)
         </button><br/><br/>
       </div>
     </div>

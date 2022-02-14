@@ -45,6 +45,10 @@ export async function addPrize(params, setError) {
   await fetchResponse('/.netlify/functions/add-prize', params, setError)
 }
 
+export async function giveBalance(params, setError) {
+  await fetchResponse('/.netlify/functions/testing-give-balance', params, setError)
+}
+
 export async function deletePrize(params, setError) {
   await fetchResponse('/.netlify/functions/delete-prize', params, setError)
 }
