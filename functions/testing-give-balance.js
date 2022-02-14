@@ -8,20 +8,24 @@ const db = new DynamoDB({
 })
 
 async function handle(data) {
-  const address = toChecksumAddress(data.address)
+  try {
+    const address = toChecksumAddress(data.address)
 
-  const settingsItems = await db.scan('settings', 1)
-  const settings = settingsItems.Items[0]
-  const batch = settings.batch
-  
-  await db.put('batches',
-    {
-      batch: batch,
-      address: address,
-      balance: parseInt(data.amount),
-      prizes: '[]'
-    }
-  )
+    const settingsItems = await db.scan('settings', 1)
+    const settings = settingsItems.Items[0]
+    const batch = settings.batch
+    
+    await db.put('batches',
+      {
+        batch: batch,
+        address: address,
+        balance: parseInt(data.amount),
+        prizes: '[]'
+      }
+    )
+  } catch(e) {
+    console.log(e.message)
+  }
 }
 
 exports.handler = (event, _, callback) => {

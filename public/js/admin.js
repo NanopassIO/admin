@@ -255,7 +255,7 @@ function App () {
           onClick=${() => giveFragments({
                 password: $('#password').val(),
                 data: {
-                  address: $('#userAddress').val(),
+                  address: $('#userAddress').val().trim(),
                   amount: $('#fragmentAmount').val()
                 }
               }, setError)}
@@ -277,7 +277,7 @@ function App () {
           onClick=${() => giveBalance({
                 password: $('#password').val(),
                 data: {
-                  address: $('#userAddress').val(),
+                  address: $('#userAddress').val().trim(),
                   amount: $('#balanceAmount').val()
                 }
           }, setError)}
