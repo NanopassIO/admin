@@ -11,7 +11,7 @@ async function fetchResponse(url, params, setError) {
       throw new Error('An error occurred')
     }
   } catch(e) {
-    setError(e.message) 
+    setError(e.message)
   } finally {
     $.LoadingOverlay('hide')
   }
@@ -50,7 +50,7 @@ export async function getActiveBatch(setError) {
 
     return await response.json()
   } catch(e) {
-    setError(e.message) 
+    setError(e.message)
   } finally {
     $.LoadingOverlay('hide')
   }
@@ -85,7 +85,7 @@ export async function getBatch(params, setError) {
     const uriContent = "data:text/csv," + encodeURIComponent(csv);
     window.open(uriContent, 'batch.csv');
   } catch(e) {
-    setError(e.message) 
+    setError(e.message)
   } finally {
     $.LoadingOverlay('hide')
   }
@@ -105,7 +105,7 @@ export async function getPrizeList(params, setError) {
     const uriContent = "data:text/csv," + encodeURIComponent(csv);
     window.open(uriContent, 'prizes.csv');
   } catch(e) {
-    setError(e.message) 
+    setError(e.message)
   } finally {
     $.LoadingOverlay('hide')
   }
@@ -129,7 +129,7 @@ export async function getAccounts(params, setError) {
     const uriContent = "data:text/csv," + encodeURIComponent(csv);
     window.open(uriContent, 'accounts.csv');
   } catch(e) {
-    setError(e.message) 
+    setError(e.message)
   } finally {
     $.LoadingOverlay('hide')
   }

@@ -1,8 +1,8 @@
-import { h, render } from 'https://unpkg.com/preact@latest?module';
-import { useState, useEffect } from 'https://unpkg.com/preact/hooks/dist/hooks.module.js?module';
-import htm from 'https://unpkg.com/htm?module';
-import { preloadBatch, getBatch, activateBatch, getPrizeList, 
-  addPrize, deletePrize, getActiveBatch, overrideActiveBatch, 
+import { render, h } from 'preact';
+import { useState, useEffect } from 'preact/hooks';
+import htm from 'htm';
+import { preloadBatch, getBatch, activateBatch, getPrizeList,
+  addPrize, deletePrize, getActiveBatch, overrideActiveBatch,
   giveFragments, getAccounts } from './functions.js';
 import { tabFunction,openDefaultTab } from './tabs.js';
 
@@ -114,7 +114,7 @@ function App () {
         </div>
         <div class="input-group">
           <label for="prizeName">Prize Name:</label>
-          <input type="prizeName" onchange="${(e)=>{
+          <input type="prizeName" onchange="${(e: any)=>{
             setInventoryName(e.target.value)
           }}" id="prizeName" name="prizeName" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
         </div>
@@ -124,7 +124,7 @@ function App () {
         </div>
         <div class="input-group">
           <label for="prizeImage">Prize Image:</label>
-          <input type="prizeImage" onchange="${(e)=>{
+          <input type="prizeImage" onchange="${(e:any)=>{
             setInventoryImage(e.target.value)
           }}" id="prizeImage" name="prizeImage" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
         </div>
@@ -191,9 +191,9 @@ function App () {
         </button><br/><br/>
       </div>
     </div>
-    
-    
-    
+
+
+
   `;
 }
 
