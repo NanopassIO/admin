@@ -88,7 +88,7 @@ async function handle(data, db, contract) {
         const val = prizeAssignment[shuffledAddresses[i]]
         prizeAssignment[shuffledAddresses[i]] = [...(val ? val : []), prizes[i].name]
         // Increase badluck count for winners, in proportion to their number of nanopasses
-        addressBadluckCount[shuffledAddresses[i]].badLuckCount = addressBadluckCount[shuffledAddresses[i]].badLuckCount - Math.ceil((addressBadluckCount[shuffledAddresses[i]].badLuckCount / holderBalance[shuffledAddresses[i]]));
+        addressBadluckCount[shuffledAddresses[i]].badLuckCount = Math.max(0, addressBadluckCount[shuffledAddresses[i]].badLuckCount - Math.ceil((addressBadluckCount[shuffledAddresses[i]].badLuckCount / holderBalance[shuffledAddresses[i]])));
       } else {
         // Increase badluck count for non-winners
         addressBadluckCount[shuffledAddresses[i]].badLuckCount = addressBadluckCount[shuffledAddresses[i]].badLuckCount + 1;
