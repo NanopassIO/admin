@@ -43,12 +43,7 @@ async function handle(data, db, contract) {
           discord: "",
         }
     
-        const fetchedAccount = (await db.getDB({
-          TableName : 'accounts',
-          Key: {
-            address: a.address
-          }
-        })).Item
+        const fetchedAccount = (await db.get('accounts',{ address: a.address })).Item
     
         if(fetchedAccount !== undefined) {
           account = fetchedAccount
