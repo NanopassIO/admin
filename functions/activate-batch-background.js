@@ -32,20 +32,31 @@ async function handle(data, db, contract) {
     let result = await db.query('batches', 'batch', data.batch)
     const existingAddresses = result.Items
 
-    const allAccountsResponse = await db.scan('accounts', 5555);
-    const allAccounts = allAccountsResponse.Items;
+    let addressBadluckCount = {};
+    for(let i = 0; i < existingAddresses.length; i+=MAX_CONCURRENCY) {
+      await Promise.all(existingAddresses.slice(i, i+MAX_CONCURRENCY).map(async a => {
+        let account = {
+          address: a.address,
+          inventory: '[]',
+          fragments: 0,
+          badLuckCount: 0,
+          discord: "",
+        }
+    
+        const fetchedAccount = (await db.getDB({
+          TableName : 'accounts',
+          Key: {
+            address: a.address
+          }
+        })).Item
+    
+        if(fetchedAccount !== undefined) {
+          account = fetchedAccount
+        }
 
-    // Format them into an object with addresses as keys
-    let addressBadluckCount = {}
-    for (let i = 0; i < allAccounts.length; i++) {
-      const addressData = {
-        badLuckCount: allAccounts[i].badLuckCount ? allAccounts[i].badLuckCount : 0,
-        inventory: allAccounts[i].inventory,
-        fragments: allAccounts[i].fragments,
-        discord: allAccounts[i].discord ? allAccounts[i].discord : ""
-      }
-
-      addressBadluckCount[allAccounts[i].address] = addressData;
+        addressBadluckCount[a.address] = account;
+      }))
+      console.log(`Pulling accounts ${i} to ${i + MAX_CONCURRENCY}`)
     }
 
     // Fetch new list
@@ -83,10 +94,12 @@ async function handle(data, db, contract) {
 
     let prizeAssignment = {}
     for(let i = 0;i < shuffledAddresses.length;i++) {
-      if (i < prizes.length) {
+      const val = prizeAssignment[shuffledAddresses[i]]
+      prizeAssignment[shuffledAddresses[i]] = [...(val ? val : [])]
+
+      if (i < prizes.length && prizes[i]) {
         // Assign prizes based on addresses list shuffle. These are winners
-        const val = prizeAssignment[shuffledAddresses[i]]
-        prizeAssignment[shuffledAddresses[i]] = [...(val ? val : []), prizes[i].name]
+        prizeAssignment[shuffledAddresses[i]].push(prizes[i].name)
         // Increase badluck count for winners, in proportion to their number of nanopasses
         addressBadluckCount[shuffledAddresses[i]].badLuckCount = Math.max(0, addressBadluckCount[shuffledAddresses[i]].badLuckCount - Math.ceil((addressBadluckCount[shuffledAddresses[i]].badLuckCount / holderBalance[shuffledAddresses[i]])));
       } else {
@@ -114,7 +127,6 @@ async function handle(data, db, contract) {
         await db.put('batches', batchItem)
 
         const accountUpdateBadluckCount = {
-          address: a,
           ...addressBadluckCount[a]
         }
 
