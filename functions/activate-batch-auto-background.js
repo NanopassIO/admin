@@ -34,33 +34,33 @@ async function getNextBatch(db) {
 }
 
 // Assign prizes based on addresses list shuffle
-function assignPrizes(shuffledAddresses, prizes) {
-  // Slice list for extra addresses
-  const addresses = shuffledAddresses.slice(0, prizes.length)
-  let prizeAssignment = {}
-  for(let i = 0;i < addresses.length;i++) {
-    const val = prizeAssignment[addresses[i]]
-    prizeAssignment[addresses[i]] = [...(val ? val : []), prizes[i].name]
-  }
-  return prizeAssignment;
-}
+// function assignPrizes(shuffledAddresses, prizes) {
+//   // Slice list for extra addresses
+//   const addresses = shuffledAddresses.slice(0, prizes.length)
+//   let prizeAssignment = {}
+//   for(let i = 0;i < addresses.length;i++) {
+//     const val = prizeAssignment[addresses[i]]
+//     prizeAssignment[addresses[i]] = [...(val ? val : []), prizes[i].name]
+//   }
+//   return prizeAssignment;
+// }
 
-function hasDuplicateWl(prizeAssignment) {
-  for(const address in prizeAssignment) {
-    let existingPrizes = []
-    for(const prize of prizeAssignment[address]) {
-      if(prize && prize.name && prize.name.toLowerCase().includes('wl')) {
-        if(existingPrizes.includes(prize.name)) {
-          return true
-        }
+// function hasDuplicateWl(prizeAssignment) {
+//   for(const address in prizeAssignment) {
+//     let existingPrizes = []
+//     for(const prize of prizeAssignment[address]) {
+//       if(prize && prize.name && prize.name.toLowerCase().includes('wl')) {
+//         if(existingPrizes.includes(prize.name)) {
+//           return true
+//         }
 
-        existingPrizes.push(prize.name)
-      }
-    }
-  }
+//         existingPrizes.push(prize.name)
+//       }
+//     }
+//   }
 
-  return false
-}
+//   return false
+// }
 
 async function handle(_, db, contract) {
   try {      

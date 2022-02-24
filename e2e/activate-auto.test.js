@@ -14,6 +14,20 @@ async function countBoxes(db, batch) {
   return boxCount
 }
 
+async function checkBadLuckCount(db, batch) {
+  const addresses = await db.query('batches', 'batch', batch)
+  let totalBadLuck = 0
+  for(const address of addresses.Items) {
+    const numWonPrizes = JSON.parse(address.prizes).length;
+    const acc = (await db.query('accounts', 'address', address.address)).Items;
+
+    expect(acc.badLuckCount).toStrictEqual(address.balance - numWonPrizes)
+
+    totalBadLuck += acc.badLuckCount
+  }
+  return totalBadLuck
+}
+
 it("activate batch after preload", async () => {
   const addresses = []
   for(let i = 0;i < 5555;i+=3) {
@@ -53,4 +67,5 @@ it("activate batch after preload", async () => {
   await activate(undefined, db, contract2)
 
   expect(await countBoxes(db, 'batch-1')).toStrictEqual(4000)
+  expect(await checkBadLuckCount(db, 'batch-1')).toStrictEqual(3800)
 })
