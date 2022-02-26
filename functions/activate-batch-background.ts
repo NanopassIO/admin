@@ -1,14 +1,14 @@
 import DynamoDB from "../src/db";
 import { createContract, takeSnapshot }from "../src/eth";
 import { shuffle } from "../src/arrays";
-import { Handler, HandlerEvent, HandlerContext, HandlerResponse } from '@netlify/functions'
+import { Handler, HandlerEvent, HandlerContext, HandlerCallback, HandlerResponse } from "@netlify/functions"
 
 const MAX_CONCURRENCY = 200
 
 async function fetchPrizes(db: DynamoDB, batch: string) {
   // Fetch list of prizes
   const result = await db.query('prizes', 'batch', batch)
-  let prizesDb = result.Items
+  let prizesDb = result.Items || [];
   let prizes = []
   for(const prizeDb of prizesDb) {
     const prizeCount = parseInt(prizeDb.count)
@@ -29,7 +29,7 @@ async function handle(data: { [key: string]: any }, dbParam?: DynamoDB, contract
     })
 
     let result = await db.query('batches', 'batch', data.batch)
-    const existingAddresses = result.Items
+    const existingAddresses = result.Items || []
 
     // Fetch new list
     if(!contract) {
@@ -38,7 +38,7 @@ async function handle(data: { [key: string]: any }, dbParam?: DynamoDB, contract
 
     const postReveal = await takeSnapshot(contract)
 
-    let postRH: {[key: string]: number} = {}
+    let postRH: { [key: string]: number } = {}
     for(const address of postReveal) {
       postRH[address] = postRH[address] ? postRH[address] + 1 : 1
     }
@@ -69,7 +69,7 @@ async function handle(data: { [key: string]: any }, dbParam?: DynamoDB, contract
 
     // Assign prizes based on addresses list shuffle
     let prizeAssignment: { [key: string]: any[] } = {}
-    for(let i = 0;i < shuffledAddresses.length;i++) {
+    for(let i = 0; i < shuffledAddresses.length; i++) {
       const val = prizeAssignment[shuffledAddresses[i]]
       prizeAssignment[shuffledAddresses[i]] = [...(val ? val : []), prizes[i].name]
     }
@@ -106,8 +106,8 @@ async function handle(data: { [key: string]: any }, dbParam?: DynamoDB, contract
   }
 }
 
-const handler = async (event: HandlerEvent) => {
-  const json = JSON.parse(event.body)
+const handler: Handler = async (event) => {
+  const json = JSON.parse(event.body || '{}')
   if(json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
     return {
@@ -124,4 +124,4 @@ const handler = async (event: HandlerEvent) => {
   }
 }
 
-export { handle, handler };
+export { handle, handler }

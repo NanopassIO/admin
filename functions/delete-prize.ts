@@ -1,5 +1,5 @@
 import DynamoDB from "../src/db"
-import { Handler, HandlerEvent, HandlerContext, HandlerResponse } from '@netlify/functions'
+import { Handler, HandlerEvent, HandlerContext, HandlerResponse, HandlerCallback } from '@netlify/functions'
 
 const db: DynamoDB = new DynamoDB({
   region: process.env.REGION,
@@ -15,8 +15,8 @@ async function handle(data: {[key: string]: any}) {
   })
 }
 
-const handler: Handler = async(event: HandlerEvent, _: HandlerContext, callback: Function) => {
-  const json = JSON.parse(event.body)
+const handler = async (event: HandlerEvent, _: HandlerContext, callback: HandlerCallback) => {
+  const json = JSON.parse(event.body || '{}')
   if(json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
     return callback(null, {
@@ -31,4 +31,4 @@ const handler: Handler = async(event: HandlerEvent, _: HandlerContext, callback:
   })
 }
 
-export {handler};
+export { handler }

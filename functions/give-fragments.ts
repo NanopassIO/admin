@@ -1,7 +1,6 @@
 import DynamoDB from "../src/db"
 import { toChecksumAddress } from 'ethereum-checksum-address'
-import { Handler, HandlerEvent, HandlerContext, HandlerResponse } from '@netlify/functions'
-
+import { Handler, HandlerEvent, HandlerContext, HandlerCallback, HandlerResponse } from "@netlify/functions"
 
 const db = new DynamoDB({
   region: process.env.REGION,
@@ -9,7 +8,7 @@ const db = new DynamoDB({
   secretAccessKey: process.env.SECRET_ACCESS_KEY,
 })
 
-async function handle(data : { [key: string]: any }) {
+async function handle(data: { [key: string]: any }) {
   const address = toChecksumAddress(data.address)
 
   let account: { [key: string]: any } = {
@@ -34,8 +33,8 @@ async function handle(data : { [key: string]: any }) {
   await db.put('accounts', account)
 }
 
-const handler: Handler = (event: HandlerEvent, _: HandlerContext, callback: Function) => {
-  const json = JSON.parse(event.body)
+const handler = (event: HandlerEvent, _: HandlerContext, callback: HandlerCallback) => {
+  const json = JSON.parse(event.body || '{}')
   if(json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
     return callback(null, {
@@ -50,4 +49,4 @@ const handler: Handler = (event: HandlerEvent, _: HandlerContext, callback: Func
   })
 }
 
-export { handler };
+export { handler }

@@ -1,6 +1,6 @@
 import AWS from 'aws-sdk';
 import { ScanInput } from 'aws-sdk/clients/dynamodb';
-import { Handler, HandlerEvent, HandlerContext, HandlerResponse } from '@netlify/functions'
+import { Handler, HandlerEvent, HandlerContext, HandlerCallback, HandlerResponse } from "@netlify/functions"
 
 AWS.config.update({
   region: process.env.REGION,
@@ -10,11 +10,11 @@ AWS.config.update({
 
 var docClient = new AWS.DynamoDB.DocumentClient();
 
-const scanTable = async (params:ScanInput) => {
+const scanTable = async (params: ScanInput) => {
   const scanResults: any[] = [];
   let items;
-  do{
-      items =  await docClient.scan(params).promise();
+  do {
+      items = await docClient.scan(params).promise();
       items && items.Items ? items.Items.forEach((item) => scanResults.push(item)) : null;
       params.ExclusiveStartKey  = items.LastEvaluatedKey;
   } while(typeof items.LastEvaluatedKey !== "undefined");
@@ -28,15 +28,15 @@ async function handle() {
       TableName : 'accounts'
     })
     return result
-  } catch(e:any) {
+  } catch(e: any) {
     console.log(e.message)
   }
 
   return
 }
 
-const handler: Handler = (event: HandlerEvent, context: HandlerContext, callback: Function) => {
-  const json = JSON.parse(event.body)
+const handler = (event: HandlerEvent, context: HandlerContext, callback: HandlerCallback) => {
+  const json = JSON.parse(event.body || '{}')
   if(json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
     return callback(null, {
@@ -51,4 +51,4 @@ const handler: Handler = (event: HandlerEvent, context: HandlerContext, callback
   })
 }
 
-export {handler};
+export { handler };

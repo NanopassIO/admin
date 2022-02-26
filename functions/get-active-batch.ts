@@ -1,6 +1,6 @@
 import AWS from "aws-sdk"
 import util from 'util'
-import { Handler, HandlerEvent, HandlerContext, HandlerResponse } from '@netlify/functions'
+import { Handler, HandlerEvent, HandlerContext, HandlerCallback, HandlerResponse } from "@netlify/functions"
 
 AWS.config.update({
   region: process.env.REGION,
@@ -27,7 +27,7 @@ async function handle() {
   return
 }
 
-const handler: Handler = (event: HandlerEvent, context:HandlerContext, callback: Function) => {
+const handler = (event: HandlerEvent, context: HandlerContext, callback: HandlerCallback) => {
   handle().then(response => {
     return callback(null, { statusCode: 200, body: JSON.stringify(response) })
   }).catch(error => {
@@ -35,4 +35,4 @@ const handler: Handler = (event: HandlerEvent, context:HandlerContext, callback:
   })
 }
 
-export { handler };
+export { handler }

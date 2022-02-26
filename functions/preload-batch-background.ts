@@ -1,10 +1,10 @@
 import DynamoDB from "../src/db";
 import { createContract, takeSnapshot } from "../src/eth";
-import { Handler, HandlerEvent, HandlerContext, HandlerResponse } from '@netlify/functions'
+import { Handler, HandlerEvent, HandlerContext, HandlerCallback, HandlerResponse } from "@netlify/functions"
 
 const MAX_CONCURRENCY = 200
 
-async function handle(data: {[key:string]: any}, dbParam?: DynamoDB, contract?:any) {
+async function handle(data: { [key: string]: any }, dbParam?: DynamoDB, contract?: any) {
   const db: DynamoDB = dbParam ? dbParam : new DynamoDB({
     region: process.env.REGION,
     accessKeyId: process.env.ACCESS_KEY_ID,
@@ -16,7 +16,7 @@ async function handle(data: {[key:string]: any}, dbParam?: DynamoDB, contract?:a
   }
   let addresses = await takeSnapshot(contract)
 
-  let bbCount: {[key:string]: number} = {}
+  let bbCount: { [key: string]: number } = {}
   for(const address of addresses) {
     bbCount[address] = bbCount[address] ? bbCount[address] + 1 : 1
   }
@@ -38,8 +38,8 @@ async function handle(data: {[key:string]: any}, dbParam?: DynamoDB, contract?:a
   }
 }
 
-const handler: Handler = async (event:HandlerEvent) => {
-  const json = JSON.parse(event.body)
+const handler: Handler = async (event) => {
+  const json = JSON.parse(event.body || '{}')
   if(json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
     return {
@@ -56,4 +56,5 @@ const handler: Handler = async (event:HandlerEvent) => {
   }
 }
 
-export { handle, handler };
+export { handle, handler }
+

@@ -1,6 +1,6 @@
 import AWS from "aws-sdk"
 import util from 'util'
-import { Handler, HandlerEvent, HandlerContext, HandlerResponse } from '@netlify/functions'
+import { Handler, HandlerEvent, HandlerContext, HandlerCallback, HandlerResponse } from "@netlify/functions"
 
 AWS.config.update({
   region: process.env.REGION,
@@ -35,8 +35,8 @@ async function handle(data: { [key: string]: any }) {
   return
 }
 
-const handler: Handler = (event:HandlerEvent, context:HandlerContext, callback:Function) => {
-  const json = JSON.parse(event.body)
+const handler = (event: HandlerEvent, context: HandlerContext, callback: HandlerCallback) => {
+  const json = JSON.parse(event.body || '{}')
   if(json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
     return callback(null, {
@@ -51,4 +51,4 @@ const handler: Handler = (event:HandlerEvent, context:HandlerContext, callback:F
   })
 }
 
-export { handler };
+export { handler }

@@ -1,7 +1,8 @@
 import DynamoDB from '../src/db';
 import { createContract, takeSnapshot } from '../src/eth';
 import { shuffle } from '../src/arrays';
-import { Handler, HandlerEvent, HandlerContext, HandlerResponse } from '@netlify/functions'
+import { Handler, HandlerEvent, HandlerContext, HandlerCallback, HandlerResponse } from "@netlify/functions"
+
 
 const MAX_CONCURRENCY = 200
 
@@ -94,7 +95,7 @@ async function handle(_: any, dbParam?: DynamoDB, contract?: any) {
 
     // Compare lists
     let flatAddresses = []
-    const holderBalance = {}
+    const holderBalance: {[key: string]: number} = {}
     for(const account of existingAddresses) {
       const count = Math.min(account.balance ?? 0, postRH[account.address] ?? 0)
       holderBalance[account.address] = count
@@ -159,8 +160,8 @@ async function handle(_: any, dbParam?: DynamoDB, contract?: any) {
   }
 }
 
-const handler: Handler = async (event: HandlerEvent) => {
-  const json = JSON.parse(event.body)
+const handler: Handler = async (event) => {
+  const json = JSON.parse(event.body || '{}')
   if(json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
     return {
