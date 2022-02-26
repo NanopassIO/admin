@@ -3,18 +3,17 @@ import { createContract, takeSnapshot } from '../src/eth';
 import { shuffle } from '../src/arrays';
 import { Handler, HandlerEvent, HandlerContext, HandlerCallback, HandlerResponse } from "@netlify/functions"
 
-
-const MAX_CONCURRENCY = 200
+const MAX_CONCURRENCY = 200;
 
 async function fetchPrizes(db: DynamoDB, batch: string) {
   // Fetch list of prizes
-  const result = await db.query('prizes', 'batch', batch)
+  const result = await db.query('prizes', 'batch', batch);
   const prizesDb = result.Items || [];
 
   const prizes = [];
-  for(const prizeDb of prizesDb) {
-    const prizeCount = parseInt(prizeDb.count)
-    for(let i = 0;i < prizeCount;i++) {
+  for (const prizeDb of prizesDb) {
+    const prizeCount = parseInt(prizeDb.count);
+    for (let i = 0; i < prizeCount; i++) {
       prizes.push(prizeDb)
     }
   }
@@ -23,7 +22,7 @@ async function fetchPrizes(db: DynamoDB, batch: string) {
 }
 
 async function getNextBatch(db: DynamoDB) {
-  const settingsItems = await db.scan('settings', 1)
+  const settingsItems = await db.scan('settings', 1);
   const settings = settingsItems && settingsItems.Items ? settingsItems.Items[0] : {}
   const batch = settings.batch || ''
 
@@ -37,22 +36,23 @@ async function getNextBatch(db: DynamoDB) {
 }
 
 // Assign prizes based on addresses list shuffle
-function assignPrizes(shuffledAddresses: string[], prizes: any[]) {
+function assignPrizes(shuffledAddresses:string[], prizes:any[]) {
   // Slice list for extra addresses
   const addresses = shuffledAddresses.slice(0, prizes.length)
 
-  let prizeAssignment: {[key:string]: any[]}= {}
+  let prizeAssignment: { [key: string]: any[] } = {}
 
-  for(let i = 0;i < addresses.length;i++) {
+  for(let i = 0; i < addresses.length; i++) {
     const val = prizeAssignment[addresses[i]]
     prizeAssignment[addresses[i]] = [...(val ? val : []), prizes[i].name]
   }
+
   return prizeAssignment;
 }
 
 function hasDuplicateWl(prizeAssignment: { [key: string]: any[] }) {
   for(const address in prizeAssignment) {
-    let existingPrizes = []
+    let existingPrizes: string[] = []
     for(const prize of prizeAssignment[address]) {
       if(prize && prize.name && prize.name.toLowerCase().includes('wl')) {
         if(existingPrizes.includes(prize.name)) {
@@ -146,6 +146,7 @@ async function handle(_: any, dbParam?: DynamoDB, contract?: any) {
           }
         await db.put('batches', batchItem)
       }))
+
       console.log(`Pushing ${i} to ${i + MAX_CONCURRENCY}`)
     }
 
@@ -178,4 +179,4 @@ const handler: Handler = async (event) => {
   }
 }
 
-export { handle, handler };
+export { handle, handler }
