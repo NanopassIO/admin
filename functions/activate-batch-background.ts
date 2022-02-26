@@ -1,10 +1,11 @@
-const DynamoDB = require("../src/db");
-const { createContract, takeSnapshot } = require("../src/eth");
-const { shuffle } = require("../src/arrays");
+import DynamoDB from "../src/db";
+import { createContract, takeSnapshot }from "../src/eth";
+import { shuffle } from "../src/arrays";
+import { Handler, HandlerEvent, HandlerContext, HandlerResponse } from '@netlify/functions'
 
 const MAX_CONCURRENCY = 200
 
-async function fetchPrizes(db, batch) {
+async function fetchPrizes(db: DynamoDB, batch: string) {
   // Fetch list of prizes
   const result = await db.query('prizes', 'batch', batch)
   let prizesDb = result.Items
@@ -19,15 +20,13 @@ async function fetchPrizes(db, batch) {
   return prizes
 }
 
-async function handle(data, db, contract) {
-  try {      
-    if(!db) {
-      db = new DynamoDB({
-        region: process.env.REGION,
-        accessKeyId: process.env.ACCESS_KEY_ID,
-        secretAccessKey: process.env.SECRET_ACCESS_KEY,
-      })
-    }
+async function handle(data: { [key: string]: any }, dbParam?: DynamoDB, contract?: any) {
+  try {
+    const db: DynamoDB = dbParam || new DynamoDB({
+      region: process.env.REGION,
+      accessKeyId: process.env.ACCESS_KEY_ID,
+      secretAccessKey: process.env.SECRET_ACCESS_KEY,
+    })
 
     let result = await db.query('batches', 'batch', data.batch)
     const existingAddresses = result.Items
@@ -39,14 +38,14 @@ async function handle(data, db, contract) {
 
     const postReveal = await takeSnapshot(contract)
 
-    let postRH = {}
+    let postRH: {[key: string]: number} = {}
     for(const address of postReveal) {
       postRH[address] = postRH[address] ? postRH[address] + 1 : 1
     }
 
     // Compare lists
     let flatAddresses = []
-    const holderBalance = {}
+    const holderBalance: { [key: string]: number } = {}
     for(const account of existingAddresses) {
       const count = Math.min(account.balance ?? 0, postRH[account.address] ?? 0)
       holderBalance[account.address] = count
@@ -69,7 +68,7 @@ async function handle(data, db, contract) {
     shuffledAddresses = shuffledAddresses.slice(0, prizes.length)
 
     // Assign prizes based on addresses list shuffle
-    let prizeAssignment = {}
+    let prizeAssignment: { [key: string]: any[] } = {}
     for(let i = 0;i < shuffledAddresses.length;i++) {
       const val = prizeAssignment[shuffledAddresses[i]]
       prizeAssignment[shuffledAddresses[i]] = [...(val ? val : []), prizes[i].name]
@@ -96,19 +95,18 @@ async function handle(data, db, contract) {
       console.log(`Pushing ${i} to ${i + MAX_CONCURRENCY}`)
     }
 
-    // Set batch as active    
+    // Set batch as active
     await db.put('settings', {
       active: 'active',
       batch: data.batch
     })
-  } catch(e) {
+  } catch(e: any) {
     console.log(e.message)
     throw e
   }
 }
 
-exports.handle = handle
-exports.handler = async (event) => {
+const handler = async (event: HandlerEvent) => {
   const json = JSON.parse(event.body)
   if(json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
@@ -125,3 +123,5 @@ exports.handler = async (event) => {
     return { statusCode: 500, body: JSON.stringify(error) }
   }
 }
+
+export { handle, handler };

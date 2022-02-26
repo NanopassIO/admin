@@ -1,5 +1,6 @@
-var AWS = require("aws-sdk")
-const util = require('util')
+import AWS from "aws-sdk"
+import util from 'util'
+import { Handler, HandlerEvent, HandlerContext, HandlerResponse } from '@netlify/functions'
 
 AWS.config.update({
   region: process.env.REGION,
@@ -16,20 +17,22 @@ async function handle() {
       TableName: 'settings',
       Limit : 1
     })
-    
-    const settings = settingsItems.Items[0]
+
+    const settings = settingsItems && settingsItems.Items ? settingsItems.Items[0] : {}
     return settings
-  } catch(e) {
+  } catch(e: any) {
     console.log(e.message)
   }
 
   return
 }
 
-exports.handler = (event, context, callback) => {
+const handler: Handler = (event: HandlerEvent, context:HandlerContext, callback: Function) => {
   handle().then(response => {
     return callback(null, { statusCode: 200, body: JSON.stringify(response) })
   }).catch(error => {
     return callback(null, { statusCode: 500, body: JSON.stringify(error) })
   })
 }
+
+export { handler };

@@ -1,12 +1,13 @@
-const DynamoDB = require("../src/db")
+import DynamoDB from "../src/db"
+import { Handler, HandlerEvent, HandlerContext, HandlerResponse } from '@netlify/functions'
 
-const db = new DynamoDB({
+const db: DynamoDB = new DynamoDB({
   region: process.env.REGION,
   accessKeyId: process.env.ACCESS_KEY_ID,
   secretAccessKey: process.env.SECRET_ACCESS_KEY,
 })
 
-async function handle(data) {
+async function handle(data: {[key: string]: any}) {
   await db.put('prizes', {
     batch: data.batch,
     name: data.name,
@@ -14,8 +15,8 @@ async function handle(data) {
   })
 }
 
-exports.handler = (event, _, callback) => {
-  const json = JSON.parse(event.body)  
+const handler: Handler = async(event: HandlerEvent, _: HandlerContext, callback: Function) => {
+  const json = JSON.parse(event.body)
   if(json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
     return callback(null, {
@@ -29,3 +30,5 @@ exports.handler = (event, _, callback) => {
     return callback(null, { statusCode: 500, body: JSON.stringify(error) })
   })
 }
+
+export {handler};

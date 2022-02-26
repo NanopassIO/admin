@@ -1,14 +1,16 @@
-const DynamoDB = require("../src/db");
-const { createContract, takeSnapshot } = require("../src/eth");
+import DynamoDB from "../src/db";
+import { createContract, takeSnapshot } from "../src/eth";
+import { Handler, HandlerEvent, HandlerContext, HandlerResponse } from '@netlify/functions'
+
 
 const MAX_CONCURRENCY = 200
 
-async function getNextBatch(db) {
+async function getNextBatch(db: DynamoDB) {
   const settingsItems = await db.scan('settings', 1)
-  const settings = settingsItems.Items[0]
-  const batch = settings.batch
+  const settings = settingsItems && settingsItems.Items ? settingsItems.Items[0] : {}
+  const batch = settings.batch || ''
 
-  return batch.split('-').map(b => {
+  return batch.split('-').map((b: string) => {
     if(b === 'batch') {
       return b
     }
@@ -17,23 +19,21 @@ async function getNextBatch(db) {
   }).join('-')
 }
 
-async function handle(_, db, contract) {
-  if(!db) {
-    db = new DynamoDB({
-      region: process.env.REGION,
-      accessKeyId: process.env.ACCESS_KEY_ID,
-      secretAccessKey: process.env.SECRET_ACCESS_KEY,
-    })
-  }
+async function handle(_: any, dbParam?: DynamoDB, contract?: any) {
+  const db: DynamoDB = dbParam ? dbParam : new DynamoDB({
+    region: process.env.REGION,
+    accessKeyId: process.env.ACCESS_KEY_ID,
+    secretAccessKey: process.env.SECRET_ACCESS_KEY,
+  })
 
   const batch = await getNextBatch(db)
-  
+
   if(!contract) {
     contract = createContract()
   }
   let addresses = await takeSnapshot(contract)
 
-  let bbCount = {}
+  let bbCount: { [key: string]: number}= {}
   for(const address of addresses) {
     bbCount[address] = bbCount[address] ? bbCount[address] + 1 : 1
   }
@@ -55,8 +55,7 @@ async function handle(_, db, contract) {
   }
 }
 
-exports.handle = handle
-exports.handler = async (event) => {
+const handler: Handler = async (event: HandlerEvent) => {
   const json = JSON.parse(event.body)
   if(json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
@@ -73,3 +72,5 @@ exports.handler = async (event) => {
     return { statusCode: 500, body: JSON.stringify(error) }
   }
 }
+
+export { handle, handler };

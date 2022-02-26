@@ -1,5 +1,6 @@
-var AWS = require("aws-sdk")
-const util = require('util')
+import AWS from "aws-sdk"
+import util from 'util'
+import { Handler, HandlerEvent, HandlerContext, HandlerResponse } from '@netlify/functions'
 
 AWS.config.update({
   region: process.env.REGION,
@@ -10,7 +11,7 @@ AWS.config.update({
 var docClient = new AWS.DynamoDB.DocumentClient();
 var table = 'prizes';
 
-async function handle(data) {
+async function handle(data: { [key: string]: any }) {
   var params = {
     TableName : table,
     ExpressionAttributeNames:{
@@ -27,15 +28,15 @@ async function handle(data) {
     const query = util.promisify(docClient.query).bind(docClient)
     const result = await query(params);
     return result
-  } catch(e) {
+  } catch(e: any) {
     console.log(e.message)
   }
 
   return
 }
 
-exports.handler = (event, context, callback) => {
-  const json = JSON.parse(event.body)  
+const handler: Handler = (event:HandlerEvent, context:HandlerContext, callback:Function) => {
+  const json = JSON.parse(event.body)
   if(json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
     return callback(null, {
@@ -49,3 +50,5 @@ exports.handler = (event, context, callback) => {
     return callback(null, { statusCode: 500, body: JSON.stringify(error) })
   })
 }
+
+export { handler };

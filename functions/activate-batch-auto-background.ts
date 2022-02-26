@@ -1,14 +1,16 @@
-const DynamoDB = require("../src/db");
-const { createContract, takeSnapshot } = require("../src/eth");
-const { shuffle } = require("../src/arrays");
+import DynamoDB from '../src/db';
+import { createContract, takeSnapshot } from '../src/eth';
+import { shuffle } from '../src/arrays';
+import { Handler, HandlerEvent, HandlerContext, HandlerResponse } from '@netlify/functions'
 
 const MAX_CONCURRENCY = 200
 
-async function fetchPrizes(db, batch) {
+async function fetchPrizes(db: DynamoDB, batch: string) {
   // Fetch list of prizes
   const result = await db.query('prizes', 'batch', batch)
-  let prizesDb = result.Items
-  let prizes = []
+  const prizesDb = result.Items || [];
+
+  const prizes = [];
   for(const prizeDb of prizesDb) {
     const prizeCount = parseInt(prizeDb.count)
     for(let i = 0;i < prizeCount;i++) {
@@ -19,12 +21,12 @@ async function fetchPrizes(db, batch) {
   return prizes
 }
 
-async function getNextBatch(db) {
+async function getNextBatch(db: DynamoDB) {
   const settingsItems = await db.scan('settings', 1)
-  const settings = settingsItems.Items[0]
-  const batch = settings.batch
+  const settings = settingsItems && settingsItems.Items ? settingsItems.Items[0] : {}
+  const batch = settings.batch || ''
 
-  return batch.split('-').map(b => {
+  return batch.split('-').map((b: string) => {
     if(b === 'batch') {
       return b
     }
@@ -34,10 +36,12 @@ async function getNextBatch(db) {
 }
 
 // Assign prizes based on addresses list shuffle
-function assignPrizes(shuffledAddresses, prizes) {
+function assignPrizes(shuffledAddresses: string[], prizes: any[]) {
   // Slice list for extra addresses
   const addresses = shuffledAddresses.slice(0, prizes.length)
-  let prizeAssignment = {}
+
+  let prizeAssignment: {[key:string]: any[]}= {}
+
   for(let i = 0;i < addresses.length;i++) {
     const val = prizeAssignment[addresses[i]]
     prizeAssignment[addresses[i]] = [...(val ? val : []), prizes[i].name]
@@ -45,7 +49,7 @@ function assignPrizes(shuffledAddresses, prizes) {
   return prizeAssignment;
 }
 
-function hasDuplicateWl(prizeAssignment) {
+function hasDuplicateWl(prizeAssignment: { [key: string]: any[] }) {
   for(const address in prizeAssignment) {
     let existingPrizes = []
     for(const prize of prizeAssignment[address]) {
@@ -62,21 +66,19 @@ function hasDuplicateWl(prizeAssignment) {
   return false
 }
 
-async function handle(_, db, contract) {
-  try {      
-    if(!db) {
-      db = new DynamoDB({
-        region: process.env.REGION,
-        accessKeyId: process.env.ACCESS_KEY_ID,
-        secretAccessKey: process.env.SECRET_ACCESS_KEY,
-      })
-    }
+async function handle(_: any, dbParam?: DynamoDB, contract?: any) {
+  try {
+    const db: DynamoDB = dbParam || new DynamoDB({
+      region: process.env.REGION,
+      accessKeyId: process.env.ACCESS_KEY_ID,
+      secretAccessKey: process.env.SECRET_ACCESS_KEY,
+    })
 
     const batch = await getNextBatch(db)
     console.log(`Activating Batch: ${batch}`)
 
     let result = await db.query('batches', 'batch', batch)
-    const existingAddresses = result.Items
+    const existingAddresses = result.Items || []
 
     // Fetch new list
     if(!contract) {
@@ -85,7 +87,7 @@ async function handle(_, db, contract) {
 
     const postReveal = await takeSnapshot(contract)
 
-    let postRH = {}
+    let postRH: {[key: string]: number} = {}
     for(const address of postReveal) {
       postRH[address] = postRH[address] ? postRH[address] + 1 : 1
     }
@@ -110,7 +112,7 @@ async function handle(_, db, contract) {
     shuffledAddresses = shuffle(shuffledAddresses)
     console.log('### Address shuffle round 3 ###')
     shuffledAddresses = shuffle(shuffledAddresses)
-    
+
     const prizeAssignment = assignPrizes(shuffledAddresses, prizes)
 
     // Keep shuffling until no duplicate WL
@@ -146,19 +148,18 @@ async function handle(_, db, contract) {
       console.log(`Pushing ${i} to ${i + MAX_CONCURRENCY}`)
     }
 
-    // Set batch as active    
+    // Set batch as active
     await db.put('settings', {
       active: 'active',
       batch: batch
     })
-  } catch(e) {
+  } catch(e: any) {
     console.log(e.message)
     throw e
   }
 }
 
-exports.handle = handle
-exports.handler = async (event) => {
+const handler: Handler = async (event: HandlerEvent) => {
   const json = JSON.parse(event.body)
   if(json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
@@ -175,3 +176,5 @@ exports.handler = async (event) => {
     return { statusCode: 500, body: JSON.stringify(error) }
   }
 }
+
+export { handle, handler };
