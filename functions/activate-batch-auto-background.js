@@ -34,16 +34,26 @@ async function getNextBatch(db) {
 }
 
 // Assign prizes based on addresses list shuffle
-// function assignPrizes(shuffledAddresses, prizes) {
-//   // Slice list for extra addresses
-//   const addresses = shuffledAddresses.slice(0, prizes.length)
-//   let prizeAssignment = {}
-//   for(let i = 0;i < addresses.length;i++) {
-//     const val = prizeAssignment[addresses[i]]
-//     prizeAssignment[addresses[i]] = [...(val ? val : []), prizes[i].name]
-//   }
-//   return prizeAssignment;
-// }
+function assignPrizes(shuffledAddresses, prizes, addressBadluckCount, holderBalance) {
+  let prizeAssignment = {}
+
+  for(let i = 0;i < shuffledAddresses.length;i++) {
+    const val = prizeAssignment[shuffledAddresses[i]]
+    prizeAssignment[shuffledAddresses[i]] = [...(val ? val : [])]
+
+    if (i < prizes.length && prizes[i]) {
+      // Assign prizes based on addresses list shuffle. These are winners
+      prizeAssignment[shuffledAddresses[i]].push(prizes[i].name)
+      // Increase badluck count for winners, in proportion to their number of nanopasses
+      addressBadluckCount[shuffledAddresses[i]].badLuckCount = Math.max(0, addressBadluckCount[shuffledAddresses[i]].badLuckCount - Math.ceil((addressBadluckCount[shuffledAddresses[i]].badLuckCount / holderBalance[shuffledAddresses[i]])));
+    } else {
+      // Increase badluck count for non-winners
+      addressBadluckCount[shuffledAddresses[i]].badLuckCount = addressBadluckCount[shuffledAddresses[i]].badLuckCount + 1;
+    }
+  }
+
+  return prizeAssignment;
+}
 
 // function hasDuplicateWl(prizeAssignment) {
 //   for(const address in prizeAssignment) {
@@ -133,23 +143,7 @@ async function handle(_, db, contract) {
     console.log('### Address shuffle round 3 ###')
     shuffledAddresses = shuffle(shuffledAddresses)
     
-    // const prizeAssignment = assignPrizes(shuffledAddresses, prizes)
-
-    let prizeAssignment = {}
-    for(let i = 0;i < shuffledAddresses.length;i++) {
-      const val = prizeAssignment[shuffledAddresses[i]]
-      prizeAssignment[shuffledAddresses[i]] = [...(val ? val : [])]
-
-      if (i < prizes.length && prizes[i]) {
-        // Assign prizes based on addresses list shuffle. These are winners
-        prizeAssignment[shuffledAddresses[i]].push(prizes[i].name)
-        // Increase badluck count for winners, in proportion to their number of nanopasses
-        addressBadluckCount[shuffledAddresses[i]].badLuckCount = Math.max(0, addressBadluckCount[shuffledAddresses[i]].badLuckCount - Math.ceil((addressBadluckCount[shuffledAddresses[i]].badLuckCount / holderBalance[shuffledAddresses[i]])));
-      } else {
-        // Increase badluck count for non-winners
-        addressBadluckCount[shuffledAddresses[i]].badLuckCount = addressBadluckCount[shuffledAddresses[i]].badLuckCount + 1;
-      }
-    }
+    const prizeAssignment = assignPrizes(shuffledAddresses, prizes, addressBadluckCount, holderBalance);
 
     // Keep shuffling until no duplicate WL
     // let prizeAssignment;
