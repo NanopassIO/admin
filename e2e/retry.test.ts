@@ -1,7 +1,7 @@
-const retry = require('async-retry')
+import retry from 'async-retry';
 jest.setTimeout(100000)
 
-const randomlyFails = async num => {
+const randomlyFails = async (num:number) => {
   if(Math.random() > 0.9) {
     console.log('failed')
     throw new Error('Failed')
@@ -11,7 +11,7 @@ const randomlyFails = async num => {
 }
 
 it("predictably fails after 100 tries", async () => {
-  let promises = []
+  let promises:Promise<number>[] = []
   for(let i = 0;i < 100;i++) {
     promises.push(randomlyFails(1))
   }

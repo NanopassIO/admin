@@ -1,11 +1,10 @@
-const preload = require('../functions/preload-batch-background').handle
-const activate = require('../functions/activate-batch-background').handle
-const addPrize = require('../functions/add-prize').handle
-const { MockDB, MockContractor } = require('./testing')
+import { handle as preload } from '../functions/preload-batch-background';
+import { handle as activate } from '../functions/activate-batch-background';
+import { handle as addPrize } from '../functions/add-prize';
+import { MockDB, MockContractor } from './testing';
+import crypto from 'crypto';
 
-var crypto = require('crypto')
-
-async function countBoxes(db, batch) {
+async function countBoxes(db: MockDB, batch: string) {
   const addresses = await db.query('batches', 'batch', batch)
   let boxCount = 0
   for(const address of addresses.Items) {
@@ -21,8 +20,10 @@ it("activate batch after preload", async () => {
     var testAddress = "0x"+id
     addresses.push(testAddress)
   }
+
   const db = new MockDB()
   const contract = new MockContractor(addresses)
+  // @ts-ignore --> db is of type MockDB when preload() is expecting type DynamoDB
   await preload({ batch: 'test' }, db, contract)
 
   expect(await countBoxes(db, 'test')).toStrictEqual(5555)
@@ -33,10 +34,12 @@ it("activate batch after preload", async () => {
     description: 'Test',
     image: 'test.png',
     count: 100
+    // @ts-ignore  --> db is of type MockDB when addPrize() is expecting type DynamoDB
   }, db)
 
   const addresses2 = addresses.slice(0, 4000)
   const contract2 = new MockContractor(addresses2)
+  // @ts-ignore --> db is of type MockDB when activate() is expecting type DynamoDB
   await activate({ batch: 'test' }, db, contract2)
 
   expect(await countBoxes(db, 'test')).toStrictEqual(4000)
