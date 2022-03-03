@@ -28,8 +28,10 @@ exports.takeSnapshot = async function(contract) {
     console.log(`Concurrency is ${concurrency}`)
     const section = Array.from(Array(concurrency), (_,x)=> x)
     return (await Promise.all(section.map(async x => {
-        return await snapshotContract.takeSnapshot(contract.address, x * portions, 
-          Math.min(x * portions + portions, maxSupply))
+        return await retry(async (bail) => {
+          return await snapshotContract.takeSnapshot(contract.address, x * portions, 
+            Math.min(x * portions + portions, maxSupply))
+        })
       }))).flat()
   }
 
