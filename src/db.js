@@ -48,10 +48,12 @@ class DynamoDB {
 		})
 	}
 
-	async get(table, key) {
+	async get(table, keyName, key) {
 		return await this.getDB({
       TableName: table,
-			Key: key
+			Key: {
+				[keyName]: key
+			}
 		})
 	}
 }

@@ -17,5 +17,5 @@ it("can give fragments", async () => {
   const id = crypto.randomBytes(20).toString('hex');
   const testAddress = toChecksumAddress(`0x${id}`)
   await giveFragments({ address: testAddress, amount: 10 }, db, contract)
-  expect((await db.get('accounts', testAddress)).Item.fragments).toStrictEqual(10)
+  expect((await db.get('accounts', 'address', testAddress)).Item.fragments).toStrictEqual(10)
 })
