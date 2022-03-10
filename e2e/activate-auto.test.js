@@ -18,7 +18,7 @@ async function checkBadLuckCount(db, batch) {
   for(const address of addresses.Items) {
     const numWonPrizes = JSON.parse(address.prizes).length;
     const acc = (await db.get('accounts', 'address', address.address)).Item;
-    expect(acc.badLuckCount).toStrictEqual(numWonPrizes > 0 ? 0 : address.balance)
+    expect(acc.badLuckCount).toStrictEqual(address.balance - numWonPrizes)
   }
 }
 
