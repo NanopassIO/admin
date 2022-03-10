@@ -34,7 +34,7 @@ async function getNextBatch(db) {
 }
 
 // Assign prizes based on addresses list shuffle
-function assignPrizes(shuffledAddresses, prizes, addressBadluckCount, holderBalance) {
+function assignPrizes(shuffledAddresses, prizes, existingAccounts, holderBalance) {
   let prizeAssignment = {}
 
   for(let i = 0;i < shuffledAddresses.length;i++) {
@@ -45,10 +45,10 @@ function assignPrizes(shuffledAddresses, prizes, addressBadluckCount, holderBala
       // Assign prizes based on addresses list shuffle. These are winners
       prizeAssignment[shuffledAddresses[i]].push(prizes[i].name)
       // Increase badluck count for winners, in proportion to their number of nanopasses
-      addressBadluckCount[shuffledAddresses[i]].badLuckCount = Math.max(0, addressBadluckCount[shuffledAddresses[i]].badLuckCount - Math.ceil((addressBadluckCount[shuffledAddresses[i]].badLuckCount / holderBalance[shuffledAddresses[i]])));
+      existingAccounts[shuffledAddresses[i]].badLuckCount = Math.max(0, existingAccounts[shuffledAddresses[i]].badLuckCount - Math.ceil((existingAccounts[shuffledAddresses[i]].badLuckCount / holderBalance[shuffledAddresses[i]])));
     } else {
       // Increase badluck count for non-winners
-      addressBadluckCount[shuffledAddresses[i]].badLuckCount = addressBadluckCount[shuffledAddresses[i]].badLuckCount + 1;
+      existingAccounts[shuffledAddresses[i]].badLuckCount = existingAccounts[shuffledAddresses[i]].badLuckCount + 1;
     }
   }
 
@@ -88,7 +88,7 @@ async function handle(_, db, contract) {
     let result = await db.query('batches', 'batch', batch)
     const existingAddresses = result.Items
 
-    let addressBadluckCount = {};
+    let existingAccounts = {};
     for(let i = 0; i < existingAddresses.length; i+=MAX_CONCURRENCY) {
       await Promise.all(existingAddresses.slice(i, i+MAX_CONCURRENCY).map(async a => {
         let account = {
@@ -102,10 +102,10 @@ async function handle(_, db, contract) {
         const fetchedAccount = (await db.get('accounts',{ address: a.address })).Item
     
         if(fetchedAccount !== undefined) {
-          account = fetchedAccount
+          account = {...account, ...fetchedAccount}
         }
 
-        addressBadluckCount[a.address] = account;
+        existingAccounts[a.address] = account;
       }))
       console.log(`Pulling accounts ${i} to ${i + MAX_CONCURRENCY}`)
     }
@@ -128,7 +128,7 @@ async function handle(_, db, contract) {
     for(const account of existingAddresses) {
       const count = Math.min(account.balance ?? 0, postRH[account.address] ?? 0)
       holderBalance[account.address] = count
-      for(let i = 0; i < count + addressBadluckCount[account.address].badLuckCount; i++) {
+      for(let i = 0; i < count + existingAccounts[account.address].badLuckCount; i++) {
         flatAddresses.push(account.address)
       }
     }
@@ -143,7 +143,7 @@ async function handle(_, db, contract) {
     console.log('### Address shuffle round 3 ###')
     shuffledAddresses = shuffle(shuffledAddresses)
     
-    const prizeAssignment = assignPrizes(shuffledAddresses, prizes, addressBadluckCount, holderBalance);
+    const prizeAssignment = assignPrizes(shuffledAddresses, prizes, existingAccounts, holderBalance);
 
     // Keep shuffling until no duplicate WL
     // let prizeAssignment;
@@ -176,7 +176,7 @@ async function handle(_, db, contract) {
         await db.put('batches', batchItem)
 
         const accountUpdateBadluckCount = {
-          ...addressBadluckCount[a]
+          ...existingAccounts[a]
         }
 
         await db.put('accounts', accountUpdateBadluckCount)
