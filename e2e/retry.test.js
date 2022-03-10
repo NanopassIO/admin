@@ -3,7 +3,6 @@ jest.setTimeout(100000)
 
 const randomlyFails = async num => {
   if(Math.random() > 0.9) {
-    console.log('failed')
     throw new Error('Failed')
   }
 

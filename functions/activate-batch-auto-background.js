@@ -1,6 +1,7 @@
 const DynamoDB = require("../src/db");
 const { createContract, takeSnapshot } = require("../src/eth");
 const { shuffle } = require("../src/arrays");
+const { getEmptyAccount } = require("../src/account")
 
 const MAX_CONCURRENCY = 200
 
@@ -35,31 +36,20 @@ async function getNextBatch(db) {
 
 // Assign prizes based on addresses list shuffle
 function assignPrizes(shuffledAddresses, prizes) {
-  // Slice list for extra addresses
-  const addresses = shuffledAddresses.slice(0, prizes.length)
   let prizeAssignment = {}
-  for(let i = 0;i < addresses.length;i++) {
-    const val = prizeAssignment[addresses[i]]
-    prizeAssignment[addresses[i]] = [...(val ? val : []), prizes[i].name]
-  }
-  return prizeAssignment;
-}
 
-function hasDuplicateWl(prizeAssignment) {
-  for(const address in prizeAssignment) {
-    let existingPrizes = []
-    for(const prize of prizeAssignment[address]) {
-      if(prize && prize.name && prize.name.toLowerCase().includes('wl')) {
-        if(existingPrizes.includes(prize.name)) {
-          return true
-        }
-
-        existingPrizes.push(prize.name)
+  for(let i = 0;i < shuffledAddresses.length;i++) {
+    if (i < prizes.length && prizes[i]) {
+      if(prizeAssignment[shuffledAddresses[i]] === undefined) {
+        prizeAssignment[shuffledAddresses[i]] = []
       }
+
+      // Assign prizes based on addresses list shuffle. These are winners
+      prizeAssignment[shuffledAddresses[i]].push(prizes[i].name)
     }
   }
 
-  return false
+  return prizeAssignment;
 }
 
 async function handle(_, db, contract) {
@@ -71,6 +61,10 @@ async function handle(_, db, contract) {
         secretAccessKey: process.env.SECRET_ACCESS_KEY,
       })
     }
+  
+    if(!contract) {
+      contract = createContract()
+    }
 
     const batch = await getNextBatch(db)
     console.log(`Activating Batch: ${batch}`)
@@ -78,11 +72,16 @@ async function handle(_, db, contract) {
     let result = await db.query('batches', 'batch', batch)
     const existingAddresses = result.Items
 
-    // Fetch new list
-    if(!contract) {
-      contract = createContract()
+    let existingAccounts = {};
+    for(let i = 0; i < existingAddresses.length; i+=MAX_CONCURRENCY) {
+      await Promise.all(existingAddresses.slice(i, i+MAX_CONCURRENCY).map(async a => {
+        const fetchedAccount = (await db.get('accounts', a.address)).Item
+        existingAccounts[a.address] = {...getEmptyAccount(a.address), ...(fetchedAccount ?? {})}
+      }))
+      console.log(`Pulling accounts ${i} to ${i + MAX_CONCURRENCY}`)
     }
 
+    // Fetch new list
     const postReveal = await takeSnapshot(contract)
 
     let postRH = {}
@@ -96,52 +95,40 @@ async function handle(_, db, contract) {
     for(const account of existingAddresses) {
       const count = Math.min(account.balance ?? 0, postRH[account.address] ?? 0)
       holderBalance[account.address] = count
-      for(let i = 0;i < count;i++) {
+      const entryCount = count + existingAccounts[account.address].badLuckCount
+      for(let i = 0; i < entryCount; i++) {
         flatAddresses.push(account.address)
       }
     }
 
     const prizes = await fetchPrizes(db, batch)
 
-    // Shuffle addresses list 3 times
-    console.log('### Address shuffle round 1 ###')
-    let shuffledAddresses = shuffle(flatAddresses)
-    console.log('### Address shuffle round 2 ###')
-    shuffledAddresses = shuffle(shuffledAddresses)
-    console.log('### Address shuffle round 3 ###')
-    shuffledAddresses = shuffle(shuffledAddresses)
-    
+    console.log('### Address Shuffle ###')
+    const shuffledAddresses = shuffle(flatAddresses)    
     const prizeAssignment = assignPrizes(shuffledAddresses, prizes)
-
-    // Keep shuffling until no duplicate WL
-    // let prizeAssignment;
-    // for(var i = 0;i < 100;i++) {
-    //   shuffledAddresses = shuffle(shuffledAddresses)
-    //   console.log(`### Address shuffle round ${i + 3} ###`)
-    //   prizeAssignment = assignPrizes(shuffledAddresses, prizes)
-
-    //   if(!hasDuplicateWl(prizeAssignment)) {
-    //     break;
-    //   }
-    // }
 
     // Push array of prizes
     const holderKeys = Object.keys(holderBalance)
     const keyCount = holderKeys.length
     for(let i = 0;i < keyCount;i+=MAX_CONCURRENCY) {
       await Promise.all(holderKeys.slice(i, i+MAX_CONCURRENCY).map(async a => {
-        const batchItem = prizeAssignment[a] ? {
-            batch: batch,
-            address: a,
-            balance: Math.max(prizeAssignment[a].length, holderBalance[a]),
-            prizes: JSON.stringify(prizeAssignment[a])
-          } : {
-            batch: batch,
-            address: a,
-            balance: holderBalance[a],
-            prizes: '[]'
-          }
+        const batchItem = {
+          batch: batch,
+          address: a,
+          balance: prizeAssignment[a] ? Math.max(prizeAssignment[a].length, holderBalance[a]) : holderBalance[a],
+          prizes: prizeAssignment[a] ? JSON.stringify(prizeAssignment[a]) : '[]'
+        }
+
+        const account = existingAccounts[a]
+        const badLuckCount = account.badLuckCount
+        if(prizeAssignment[a]) {
+          account.badLuckCount = Math.max(0, badLuckCount - Math.ceil(badLuckCount / holderBalance[a]))
+        } else {
+          account.badLuckCount += holderBalance[a]
+        }
+    
         await db.put('batches', batchItem)
+        await db.put('accounts', account)
       }))
       console.log(`Pushing ${i} to ${i + MAX_CONCURRENCY}`)
     }
