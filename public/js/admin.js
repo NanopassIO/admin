@@ -2,7 +2,7 @@ import { h, render } from 'https://unpkg.com/preact@latest?module';
 import { useState, useEffect } from 'https://unpkg.com/preact/hooks/dist/hooks.module.js?module';
 import htm from 'https://unpkg.com/htm?module';
 import { preloadBatch, getBatch, activateBatch, getPrizeList, 
-  addPrize, deletePrize, getActiveBatch, overrideActiveBatch, 
+  addPrize, deletePrize, addMarketplaceItem, getActiveBatch, overrideActiveBatch, 
   giveFragments, getAccounts, winners, giveBalance } from './functions.js';
 import { tabFunction,openDefaultTab } from './tabs.js';
 
@@ -24,6 +24,8 @@ function App () {
   const [activeBatch, setActiveBatch] = useState('')
   const [inventoryImage, setInventoryImage] = useState('')
   const [inventoryName, setInventoryName] = useState('')
+  const [marketplaceImage, setMarketplaceImage] = useState('')
+  const [marketplaceName, setMarketplaceName] = useState('')
   useEffect(() => {
     getActiveBatch(setError)
        .then(settings => {
@@ -48,6 +50,10 @@ function App () {
         <button class="tablinks" id="pm-button"
           onClick=${() => tabFunction('pm-button','prize-management')}>
           Prize Management
+        </button>
+        <button class="tablinks" id="mm-button"
+          onClick=${() => tabFunction('mm-button','marketplace-management')}>
+          Marketplace Management
         </button>
         <button class="tablinks" id="um-button"
           onClick=${() => tabFunction('um-button','user-management')}>
@@ -237,6 +243,55 @@ function App () {
               }, setError)}
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Delete Prize
+        </button><br/><br/>
+      </div>
+
+      <div id="marketplace-management" class="tabcontent">
+        <h1>Marketplace Management</h1>
+        <div class="inventory-item">
+          <picture>
+            <img src="${marketplaceImage}" class="inventoryImage" />
+          </picture>
+          <label class="inventoryLabel">${marketplaceName}</label>
+        </div>
+        <div class="input-group">
+          <label for="marketplaceName">Marketplace Item Name:</label>
+          <input type="marketplaceName" onchange="${(e)=>{
+            setMarketplaceName(e.target.value)
+          }}" id="marketplaceName" name="marketplaceName" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
+        </div>
+        <div class="input-group">
+          <label for="marketplaceDesc">Marketplace Item Description:</label>
+          <textarea type="marketplaceDesc" id="marketplaceDesc" name="marketplaceDesc" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
+        </div>
+        <div class="input-group">
+          <label for="marketplaceImage">Marketplace Item Image:</label>
+          <input type="marketplaceImage" onchange="${(e)=>{
+            setMarketplaceImage(e.target.value)
+          }}" id="marketplaceImage" name="marketplaceImage" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
+        </div>
+        <div class="input-group">
+          <label for="marketplaceSupply">Marketplace Item Max Supply:</label>
+          <input type="number" min="0" step="1" id="marketplaceSupply" name="marketplaceSupply" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
+        </div>
+        <div class="input-group">
+          <label for="marketplaceCost">Marketplace Item Fragment Cost:</label>
+          <input type="number" min="0" step="1" id="marketplaceCost" name="marketplaceCost" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
+        </div>
+        <br/>
+        <button id="click"
+          onClick=${() => addMarketplaceItem({
+                password: $('#password').val(),
+                data: {
+                  name: $('#marketplaceName').val().trim(),
+                  description: $('#marketplaceDesc').val().trim(),
+                  image: $('#marketplaceImage').val().trim(),
+                  supply: $('#marketplaceSupply').val().trim(),
+                  cost: $('#marketplaceCost').val().trim()
+                }
+              }, setError)}
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Add Marketplace Item
         </button><br/><br/>
       </div>
 

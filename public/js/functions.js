@@ -53,6 +53,10 @@ export async function deletePrize(params, setError) {
   await fetchResponse('/.netlify/functions/delete-prize', params, setError)
 }
 
+export async function addMarketplaceItem(params, setError) {
+  await fetchResponse('/.netlify/functions/add-marketplace', params, setError)
+}
+
 export async function giveFragments(params, setError) {
   await fetchResponse('/.netlify/functions/give-fragments', params, setError)
 }
