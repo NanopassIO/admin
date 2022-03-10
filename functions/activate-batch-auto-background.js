@@ -1,7 +1,7 @@
-const DynamoDB = require("../src/db");
-const { createContract, takeSnapshot } = require("../src/eth");
-const { shuffle } = require("../src/arrays");
+const DynamoDB = require("../src/db")
+const { createContract, takeSnapshot } = require("../src/eth")
 const { getEmptyAccount } = require("../src/account")
+const crypto = require("crypto")
 
 const MAX_CONCURRENCY = 200
 
@@ -34,20 +34,29 @@ async function getNextBatch(db) {
   }).join('-')
 }
 
-// Assign prizes based on addresses list shuffle
-function assignPrizes(shuffledAddresses, prizes) {
+function assignPrizes(flatAddresses, prizes, holderBalance) {
   let prizeAssignment = {}
 
-  for(let i = 0;i < shuffledAddresses.length;i++) {
-    if (i < prizes.length && prizes[i]) {
-      if(prizeAssignment[shuffledAddresses[i]] === undefined) {
-        prizeAssignment[shuffledAddresses[i]] = []
+  do {
+    const i = crypto.randomInt(flatAddresses.length)
+    const prize = prizes[0]
+    const address = flatAddresses[i]
+
+    const previousPrizes = prizeAssignment[address]
+    if(previousPrizes) {
+      if(previousPrizes.length >= holderBalance[address]) {
+        continue
       }
 
-      // Assign prizes based on addresses list shuffle. These are winners
-      prizeAssignment[shuffledAddresses[i]].push(prizes[i].name)
+      if(previousPrizes.includes(prize.name)) {
+        continue
+      }
     }
-  }
+
+    prizes.shift()
+    prizeAssignment[address] = [...(previousPrizes ?? []), prize.name]
+    console.log(`${address} has won ${prize.name}`)
+  } while(prizes.length > 0)
 
   return prizeAssignment;
 }
@@ -102,9 +111,7 @@ async function handle(_, db, contract) {
 
   const prizes = await fetchPrizes(db, batch)
 
-  console.log('### Address Shuffle ###')
-  const shuffledAddresses = shuffle(flatAddresses)    
-  const prizeAssignment = assignPrizes(shuffledAddresses, prizes)
+  const prizeAssignment = assignPrizes(flatAddresses, prizes, holderBalance)
 
   // Push array of prizes
   const holderKeys = Object.keys(holderBalance)
