@@ -37,7 +37,7 @@ async function getNextBatch(db) {
 function assignPrizes(flatAddresses, prizes, holderBalance) {
   let prizeAssignment = {}
 
-  do {
+  while(prizes.length > 0) {
     const i = crypto.randomInt(flatAddresses.length)
     const prize = prizes[0]
     const address = flatAddresses[i]
@@ -57,7 +57,7 @@ function assignPrizes(flatAddresses, prizes, holderBalance) {
     flatAddresses.splice(i, 1)
     prizeAssignment[address] = [...(previousPrizes ?? []), prize.name]
     console.log(`${address} has won ${prize.name}`)
-  } while(prizes.length > 0)
+  }
 
   return prizeAssignment;
 }
