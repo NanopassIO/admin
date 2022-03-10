@@ -27,6 +27,7 @@ async function handle(_, db, contract) {
   }
 
   const batch = await getNextBatch(db)
+  console.log(`Pre-loading Batch: ${batch}`)
   
   if(!contract) {
     contract = createContract()

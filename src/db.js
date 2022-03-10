@@ -47,6 +47,15 @@ class DynamoDB {
       Limit : limit
 		})
 	}
+
+	async get(table, keyName, key) {
+		return await this.getDB({
+      TableName: table,
+			Key: {
+				[keyName]: key
+			}
+		})
+	}
 }
 
 module.exports = DynamoDB
