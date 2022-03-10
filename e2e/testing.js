@@ -41,7 +41,7 @@ class MockDB {
     return { Items: this.db[table][values[0]] }
 	}
 
-	async get(table, value) {
+	async get(table, _, value) {
     return { Item: this.db[table][value] }
 	}
 

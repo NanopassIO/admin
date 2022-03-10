@@ -2,6 +2,7 @@ const DynamoDB = require("../src/db");
 const { createContract, takeSnapshot } = require("../src/eth");
 const { shuffle } = require("../src/arrays");
 const { getEmptyAccount } = require("../src/account")
+require("dotenv").config()
 
 const MAX_CONCURRENCY = 200
 
@@ -53,95 +54,90 @@ function assignPrizes(shuffledAddresses, prizes) {
 }
 
 async function handle(_, db, contract) {
-  try {      
-    if(!db) {
-      db = new DynamoDB({
-        region: process.env.REGION,
-        accessKeyId: process.env.ACCESS_KEY_ID,
-        secretAccessKey: process.env.SECRET_ACCESS_KEY,
-      })
-    }
-  
-    if(!contract) {
-      contract = createContract()
-    }
-
-    const batch = await getNextBatch(db)
-    console.log(`Activating Batch: ${batch}`)
-
-    let result = await db.query('batches', 'batch', batch)
-    const existingAddresses = result.Items
-
-    let existingAccounts = {};
-    for(let i = 0; i < existingAddresses.length; i+=MAX_CONCURRENCY) {
-      await Promise.all(existingAddresses.slice(i, i+MAX_CONCURRENCY).map(async a => {
-        const fetchedAccount = (await db.get('accounts', a.address)).Item
-        existingAccounts[a.address] = {...getEmptyAccount(a.address), ...(fetchedAccount ?? {})}
-      }))
-      console.log(`Pulling accounts ${i} to ${i + MAX_CONCURRENCY}`)
-    }
-
-    // Fetch new list
-    const postReveal = await takeSnapshot(contract)
-
-    let postRH = {}
-    for(const address of postReveal) {
-      postRH[address] = postRH[address] ? postRH[address] + 1 : 1
-    }
-
-    // Compare lists
-    let flatAddresses = []
-    const holderBalance = {}
-    for(const account of existingAddresses) {
-      const count = Math.min(account.balance ?? 0, postRH[account.address] ?? 0)
-      holderBalance[account.address] = count
-      const entryCount = count + existingAccounts[account.address].badLuckCount
-      for(let i = 0; i < entryCount; i++) {
-        flatAddresses.push(account.address)
-      }
-    }
-
-    const prizes = await fetchPrizes(db, batch)
-
-    console.log('### Address Shuffle ###')
-    const shuffledAddresses = shuffle(flatAddresses)    
-    const prizeAssignment = assignPrizes(shuffledAddresses, prizes)
-
-    // Push array of prizes
-    const holderKeys = Object.keys(holderBalance)
-    const keyCount = holderKeys.length
-    for(let i = 0;i < keyCount;i+=MAX_CONCURRENCY) {
-      await Promise.all(holderKeys.slice(i, i+MAX_CONCURRENCY).map(async a => {
-        const batchItem = {
-          batch: batch,
-          address: a,
-          balance: prizeAssignment[a] ? Math.max(prizeAssignment[a].length, holderBalance[a]) : holderBalance[a],
-          prizes: prizeAssignment[a] ? JSON.stringify(prizeAssignment[a]) : '[]'
-        }
-
-        const account = existingAccounts[a]
-        const badLuckCount = account.badLuckCount
-        if(prizeAssignment[a]) {
-          account.badLuckCount = Math.max(0, badLuckCount - Math.ceil(badLuckCount / holderBalance[a]))
-        } else {
-          account.badLuckCount += holderBalance[a]
-        }
-    
-        await db.put('batches', batchItem)
-        await db.put('accounts', account)
-      }))
-      console.log(`Pushing ${i} to ${i + MAX_CONCURRENCY}`)
-    }
-
-    // Set batch as active    
-    await db.put('settings', {
-      active: 'active',
-      batch: batch
+  if(!db) {
+    db = new DynamoDB({
+      region: process.env.REGION,
+      accessKeyId: process.env.ACCESS_KEY_ID,
+      secretAccessKey: process.env.SECRET_ACCESS_KEY,
     })
-  } catch(e) {
-    console.log(e.message)
-    throw e
   }
+
+  if(!contract) {
+    contract = createContract()
+  }
+
+  const batch = await getNextBatch(db)
+  console.log(`Activating Batch: ${batch}`)
+
+  let result = await db.query('batches', 'batch', batch)
+  const existingAddresses = result.Items
+
+  let existingAccounts = {};
+  for(let i = 0; i < existingAddresses.length; i+=MAX_CONCURRENCY) {
+    await Promise.all(existingAddresses.slice(i, i+MAX_CONCURRENCY).map(async a => {
+      const fetchedAccount = (await db.get('accounts', 'address', a.address)).Item
+      existingAccounts[a.address] = {...getEmptyAccount(a.address), ...(fetchedAccount ?? {})}
+    }))
+    console.log(`Pulling accounts ${i} to ${i + MAX_CONCURRENCY}`)
+  }
+
+  // Fetch new list
+  const postReveal = await takeSnapshot(contract)
+
+  let postRH = {}
+  for(const address of postReveal) {
+    postRH[address] = postRH[address] ? postRH[address] + 1 : 1
+  }
+
+  // Compare lists
+  let flatAddresses = []
+  const holderBalance = {}
+  for(const account of existingAddresses) {
+    const count = Math.min(account.balance ?? 0, postRH[account.address] ?? 0)
+    holderBalance[account.address] = count
+    const entryCount = count + existingAccounts[account.address].badLuckCount
+    for(let i = 0; i < entryCount; i++) {
+      flatAddresses.push(account.address)
+    }
+  }
+
+  const prizes = await fetchPrizes(db, batch)
+
+  console.log('### Address Shuffle ###')
+  const shuffledAddresses = shuffle(flatAddresses)    
+  const prizeAssignment = assignPrizes(shuffledAddresses, prizes)
+
+  // Push array of prizes
+  const holderKeys = Object.keys(holderBalance)
+  const keyCount = holderKeys.length
+  for(let i = 0;i < keyCount;i+=MAX_CONCURRENCY) {
+    await Promise.all(holderKeys.slice(i, i+MAX_CONCURRENCY).map(async a => {
+      const batchItem = {
+        batch: batch,
+        address: a,
+        balance: prizeAssignment[a] ? Math.max(prizeAssignment[a].length, holderBalance[a]) : holderBalance[a],
+        prizes: prizeAssignment[a] ? JSON.stringify(prizeAssignment[a]) : '[]'
+      }
+
+      const account = existingAccounts[a]
+      const badLuckCount = account.badLuckCount
+      if(prizeAssignment[a]) {
+        account.badLuckCount = Math.max(0, badLuckCount - Math.ceil(badLuckCount / holderBalance[a]))
+      } else {
+        account.badLuckCount += holderBalance[a]
+      }
+  
+      await db.put('batches', batchItem)
+      await db.put('accounts', account)
+    }))
+    console.log(`Pushing ${i} to ${i + MAX_CONCURRENCY}`)
+  }
+
+  // Set batch as active    
+  await db.put('settings', {
+    active: 'active',
+    batch: batch
+  })
 }
 
 exports.handle = handle

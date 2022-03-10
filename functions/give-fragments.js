@@ -16,7 +16,7 @@ async function handle(data, db, contract) {
   }
   
   const address = toChecksumAddress(data.address)
-  const account = (await db.get('accounts', address)).Item ?? getEmptyAccount(address)
+  const account = (await db.get('accounts', 'address', address)).Item ?? getEmptyAccount(address)
 
   account.fragments += parseInt(data.amount)
 
