@@ -2,7 +2,6 @@ const DynamoDB = require("../src/db");
 const { createContract, takeSnapshot } = require("../src/eth");
 const { shuffle } = require("../src/arrays");
 const { getEmptyAccount } = require("../src/account")
-require("dotenv").config()
 
 const MAX_CONCURRENCY = 200
 
