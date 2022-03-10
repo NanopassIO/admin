@@ -35,23 +35,17 @@ async function getNextBatch(db) {
 }
 
 // Assign prizes based on addresses list shuffle
-function assignPrizes(shuffledAddresses, prizes, existingAccounts, holderBalance) {
+function assignPrizes(shuffledAddresses, prizes) {
   let prizeAssignment = {}
 
   for(let i = 0;i < shuffledAddresses.length;i++) {
-    const val = prizeAssignment[shuffledAddresses[i]]
-    prizeAssignment[shuffledAddresses[i]] = [...(val ? val : [])]
-    const badLuckCount = existingAccounts[shuffledAddresses[i]].badLuckCount
-
     if (i < prizes.length && prizes[i]) {
+      if(prizeAssignment[shuffledAddresses[i]] === undefined) {
+        prizeAssignment[shuffledAddresses[i]] = []
+      }
+
       // Assign prizes based on addresses list shuffle. These are winners
       prizeAssignment[shuffledAddresses[i]].push(prizes[i].name)
-      // Increase badluck count for winners, in proportion to their number of nanopasses
-      existingAccounts[shuffledAddresses[i]].badLuckCount = 
-        Math.max(0, badLuckCount - Math.ceil(badLuckCount / holderBalance[shuffledAddresses[i]]));
-    } else {
-      // Increase badluck count for non-winners
-      existingAccounts[shuffledAddresses[i]].badLuckCount++
     }
   }
 
@@ -111,7 +105,7 @@ async function handle(_, db, contract) {
 
     console.log('### Address Shuffle ###')
     const shuffledAddresses = shuffle(flatAddresses)    
-    const prizeAssignment = assignPrizes(shuffledAddresses, prizes, existingAccounts, holderBalance);
+    const prizeAssignment = assignPrizes(shuffledAddresses, prizes)
 
     // Push array of prizes
     const holderKeys = Object.keys(holderBalance)
@@ -125,8 +119,16 @@ async function handle(_, db, contract) {
           prizes: prizeAssignment[a] ? JSON.stringify(prizeAssignment[a]) : '[]'
         }
 
+        const account = existingAccounts[a]
+        const badLuckCount = account.badLuckCount
+        if(prizeAssignment[a]) {
+          account.badLuckCount = Math.max(0, badLuckCount - Math.ceil(badLuckCount / holderBalance[a]))
+        } else {
+          account.badLuckCount += holderBalance[a]
+        }
+    
         await db.put('batches', batchItem)
-        await db.put('accounts', existingAccounts[a])
+        await db.put('accounts', account)
       }))
       console.log(`Pushing ${i} to ${i + MAX_CONCURRENCY}`)
     }

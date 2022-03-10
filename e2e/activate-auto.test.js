@@ -15,16 +15,11 @@ async function countBoxes(db, batch) {
 
 async function checkBadLuckCount(db, batch) {
   const addresses = await db.query('batches', 'batch', batch)
-  let totalBadLuck = 0
   for(const address of addresses.Items) {
     const numWonPrizes = JSON.parse(address.prizes).length;
-    const acc = (await db.query('accounts', 'address', address.address)).Items;
-
-    expect(acc.badLuckCount).toStrictEqual(address.balance - numWonPrizes)
-
-    totalBadLuck += acc.badLuckCount
+    const acc = (await db.get('accounts', address.address)).Item;
+    expect(acc.badLuckCount).toStrictEqual(numWonPrizes > 0 ? 0 : address.balance)
   }
-  return totalBadLuck
 }
 
 let addresses
@@ -71,7 +66,7 @@ it("can preload and activate batch", async () => {
   await activate(undefined, db, nextBatchContract)
 
   expect(await countBoxes(db, 'batch-1')).toStrictEqual(4000)
-  expect(await checkBadLuckCount(db, 'batch-1')).toStrictEqual(3800)
+  await checkBadLuckCount(db, 'batch-1')
 })
 
 
@@ -104,10 +99,10 @@ it("can handle existing address with no badLuckCount", async () => {
     count: 100
   }, db)
 
-  const addresses2 = addresses.slice(0, 4000)
-  const contract2 = new MockContractor(addresses2)
-  await activate(undefined, db, contract2)
+  const nextBatchAddresses = addresses.slice(0, 4000)
+  const nextBatchContract = new MockContractor(nextBatchAddresses)
+  await activate(undefined, db, nextBatchContract)
 
   expect(await countBoxes(db, 'batch-1')).toStrictEqual(4000)
-  expect(await checkBadLuckCount(db, 'batch-1')).toStrictEqual(3800)
+  await checkBadLuckCount(db, 'batch-1')
 })
