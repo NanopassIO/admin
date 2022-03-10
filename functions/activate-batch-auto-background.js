@@ -119,19 +119,27 @@ async function handle(_, db, contract) {
   const keyCount = holderKeys.length
   for(let i = 0;i < keyCount;i+=MAX_CONCURRENCY) {
     await Promise.all(holderKeys.slice(i, i+MAX_CONCURRENCY).map(async a => {
+      const balance = holderBalance[a]
+      const prizeArray = prizeAssignment[a]
       const batchItem = {
         batch: batch,
         address: a,
-        balance: prizeAssignment[a] ? Math.max(prizeAssignment[a].length, holderBalance[a]) : holderBalance[a],
-        prizes: prizeAssignment[a] ? JSON.stringify(prizeAssignment[a]) : '[]'
+        balance: prizeArray ? Math.max(prizeArray.length, balance) : balance,
+        prizes: JSON.stringify(prizeArray ?? [])
       }
 
       const account = existingAccounts[a]
       const badLuckCount = account.badLuckCount
-      if(prizeAssignment[a]) {
-        account.badLuckCount = Math.max(0, badLuckCount - Math.ceil(badLuckCount / holderBalance[a]))
+      if(prizeArray) {
+        for(let j = 0;j < balance;j++) {
+          if(prizeArray[j]) {
+            account.badLuckCount = Math.max(0, badLuckCount - Math.ceil(badLuckCount / balance))
+          } else {
+            account.badLuckCount++
+          }
+        }
       } else {
-        account.badLuckCount += holderBalance[a]
+        account.badLuckCount += balance
       }
   
       await db.put('batches', batchItem)
