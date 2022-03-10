@@ -54,6 +54,7 @@ function assignPrizes(flatAddresses, prizes, holderBalance) {
     }
 
     prizes.shift()
+    flatAddresses.splice(i, 1)
     prizeAssignment[address] = [...(previousPrizes ?? []), prize.name]
     console.log(`${address} has won ${prize.name}`)
   } while(prizes.length > 0)
