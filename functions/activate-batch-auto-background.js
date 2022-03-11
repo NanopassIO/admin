@@ -131,13 +131,11 @@ async function handle(_, db, contract) {
       const account = existingAccounts[a]
       const badLuckCount = account.badLuckCount
       if(prizeArray) {
-        for(let j = 0;j < balance;j++) {
-          if(prizeArray[j]) {
-            account.badLuckCount = Math.max(0, badLuckCount - Math.ceil(badLuckCount / balance))
-          } else {
-            account.badLuckCount++
-          }
-        }
+        // Minus `Math.ceil(badLuckCount / balance)` per prize
+        account.badLuckCount = Math.max(0, badLuckCount - prizeArray.length * Math.ceil(badLuckCount / balance))
+
+        // Add 1 per box without prize
+        account.badLuckCount += Math.max(0, balance - prizeArray.length)
       } else {
         account.badLuckCount += balance
       }
