@@ -14,10 +14,10 @@ async function handle(data, db) {
       image: data.image,
       supply: parseInt(data.supply),
       instock: parseInt(data.supply),
-      cost: parseInt(data.cost)
+      cost: parseInt(data.cost),
+      active: data.active
     })
 }
-
 exports.handle = handle
 exports.handler = (event, _, callback) => {
   const json = JSON.parse(event.body)  

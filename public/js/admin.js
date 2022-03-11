@@ -278,6 +278,10 @@ function App () {
           <label for="marketplaceCost">Marketplace Item Fragment Cost:</label>
           <input type="number" min="0" step="1" id="marketplaceCost" name="marketplaceCost" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
         </div>
+        <div class="input-group" style="margin: 1rem 1rem 0 1rem; flex-direction: row; align-items: center;">
+          <label for="marketplaceActive" style="margin: 0 1rem 0 0">Active?:</label>
+          <input type="checkbox" id="marketplaceActive" name="marketplaceActive" />
+        </div>
         <br/>
         <button id="click"
           onClick=${() => addMarketplaceItem({
@@ -287,7 +291,8 @@ function App () {
                   description: $('#marketplaceDesc').val().trim(),
                   image: $('#marketplaceImage').val().trim(),
                   supply: $('#marketplaceSupply').val().trim(),
-                  cost: $('#marketplaceCost').val().trim()
+                  cost: $('#marketplaceCost').val().trim(),
+                  active: $('#marketplaceActive').is(":checked")
                 }
               }, setError)}
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
