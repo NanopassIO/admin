@@ -1,9 +1,9 @@
-let $;
-let XLSX;
+let $
+let XLSX
 
-if(typeof window !== 'undefined') {
-  $ = window.$;
-  XLSX = window.XLSX;
+if (typeof window !== 'undefined') {
+  $ = window.$
+  XLSX = window.XLSX
 }
 
 // This is for Skvlpunks DAO, since they cannot claim prizes through the DAO,
@@ -12,52 +12,52 @@ const ADDRESS_MAPPING = {
   '0xcdA2E4b965eCa883415107b624e971c4Cefc4D8C': '0xEfEE7fD9aF43945E7b7D9655592600A6a63eFf0D'
 }
 
-async function fetchResponse(url, params, setError) {
+async function fetchResponse (url, params, setError) {
   $.LoadingOverlay('show')
   try {
     const response = await fetch(url, {
-        body: JSON.stringify(params),
-        method: 'POST'
+      body: JSON.stringify(params),
+      method: 'POST'
     })
-    if(!response.ok) {
+    if (!response.ok) {
       throw new Error('An error occurred')
     }
-  } catch(e) {
-    setError(e.message) 
+  } catch (e) {
+    setError(e.message)
   } finally {
     $.LoadingOverlay('hide')
   }
 }
 
-export async function preloadBatch(params, setError) {
+export async function preloadBatch (params, setError) {
   await fetchResponse('/.netlify/functions/preload-batch-background', params, setError)
 }
 
-export async function activateBatch(params, setError) {
+export async function activateBatch (params, setError) {
   await fetchResponse('/.netlify/functions/activate-batch-background', params, setError)
 }
 
-export async function overrideActiveBatch(params, setError) {
+export async function overrideActiveBatch (params, setError) {
   await fetchResponse('/.netlify/functions/override-active-batch', params, setError)
 }
 
-export async function addPrize(params, setError) {
+export async function addPrize (params, setError) {
   await fetchResponse('/.netlify/functions/add-prize', params, setError)
 }
 
-export async function giveBalance(params, setError) {
+export async function giveBalance (params, setError) {
   await fetchResponse('/.netlify/functions/testing-give-balance', params, setError)
 }
 
-export async function deletePrize(params, setError) {
+export async function deletePrize (params, setError) {
   await fetchResponse('/.netlify/functions/delete-prize', params, setError)
 }
 
-export async function giveFragments(params, setError) {
+export async function giveFragments (params, setError) {
   await fetchResponse('/.netlify/functions/give-fragments', params, setError)
 }
 
-export async function getActiveBatch(setError) {
+export async function getActiveBatch (setError) {
   $.LoadingOverlay('show')
   try {
     const response = await fetch('/.netlify/functions/get-active-batch', {
@@ -65,18 +65,18 @@ export async function getActiveBatch(setError) {
     })
 
     return await response.json()
-  } catch(e) {
-    setError(e.message) 
+  } catch (e) {
+    setError(e.message)
   } finally {
     $.LoadingOverlay('hide')
   }
 }
 
-function performAddressReplacement(address) {
+function performAddressReplacement (address) {
   return ADDRESS_MAPPING[address] ? ADDRESS_MAPPING[address] : address
 }
 
-export async function getBatch(params, setError) {
+export async function getBatch (params, setError) {
   $.LoadingOverlay('show')
   try {
     const response = await fetch('/.netlify/functions/get-batch', {
@@ -91,21 +91,21 @@ export async function getBatch(params, setError) {
       prizes: JSON.parse(x.prizes ? x.prizes : '[]').join('+'),
       claimed: JSON.parse(x.claimed ? x.claimed : '[]').join('+')
     }))
-    
+
     const ws = XLSX.utils.json_to_sheet(converted, {
       header: ['address', 'balance', 'prizes', 'claimed']
     })
-    const wb = XLSX.utils.book_new() 
+    const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Batch')
     XLSX.writeFile(wb, 'Batch.xlsx')
-  } catch(e) {
-    setError(e.message) 
+  } catch (e) {
+    setError(e.message)
   } finally {
     $.LoadingOverlay('hide')
   }
 }
 
-export async function getPrizeList(params, setError) {
+export async function getPrizeList (params, setError) {
   $.LoadingOverlay('show')
   try {
     const response = await fetch('/.netlify/functions/get-prizes', {
@@ -113,20 +113,19 @@ export async function getPrizeList(params, setError) {
       method: 'POST'
     })
 
-    const json = await response.json()    
-    const ws = XLSX.utils.json_to_sheet(json.Items) 
-    const wb = XLSX.utils.book_new() 
+    const json = await response.json()
+    const ws = XLSX.utils.json_to_sheet(json.Items)
+    const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Prizes')
     XLSX.writeFile(wb, 'Prizes.xlsx')
-  } catch(e) {
-    setError(e.message) 
+  } catch (e) {
+    setError(e.message)
   } finally {
     $.LoadingOverlay('hide')
   }
 }
 
-
-export async function getAccounts(params, setError) {
+export async function getAccounts (params, setError) {
   $.LoadingOverlay('show')
   try {
     const response = await fetch('/.netlify/functions/get-accounts', {
@@ -140,21 +139,21 @@ export async function getAccounts(params, setError) {
       address: performAddressReplacement(x.address),
       inventory: JSON.parse(x.inventory ? x.inventory : '[]').map(y => y.name).join('+')
     }))
-   
+
     const ws = XLSX.utils.json_to_sheet(converted, {
       header: ['address', 'discord', 'fragments', 'inventory']
-    }) 
-    const wb = XLSX.utils.book_new() 
+    })
+    const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Accounts')
     XLSX.writeFile(wb, 'Accounts.xlsx')
-  } catch(e) {
-    setError(e.message) 
+  } catch (e) {
+    setError(e.message)
   } finally {
     $.LoadingOverlay('hide')
   }
 }
 
-export async function winners(params, search, setError) {
+export async function winners (params, search, setError) {
   $.LoadingOverlay('show')
   try {
     const accountsResponse = await fetch('/.netlify/functions/get-accounts', {
@@ -166,7 +165,7 @@ export async function winners(params, search, setError) {
       ...x,
       address: performAddressReplacement(x.address)
     }))
-   
+
     const batchResponse = await fetch('/.netlify/functions/get-batch', {
       body: JSON.stringify(params),
       method: 'POST'
@@ -184,12 +183,12 @@ export async function winners(params, search, setError) {
     }
 
     const merged = []
-    
-    for(const batch of batchJson) {
+
+    for (const batch of batchJson) {
       const prizeArray = JSON.parse(batch.claimed ? batch.claimed : '[]')
       const discord = accountByAddress(batch.address) ? accountByAddress(batch.address).discord : 'Not found'
-      for(const prize of prizeArray) {
-        if(prize.toLowerCase().includes(search) || search === null) {
+      for (const prize of prizeArray) {
+        if (prize.toLowerCase().includes(search) || search === null) {
           merged.push({
             prize: prize,
             address: batch.address,
@@ -199,11 +198,11 @@ export async function winners(params, search, setError) {
       }
     }
 
-    const ws = XLSX.utils.json_to_sheet(merged) 
-    const wb = XLSX.utils.book_new() 
+    const ws = XLSX.utils.json_to_sheet(merged)
+    const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Winners')
     XLSX.writeFile(wb, `${search}_winners.xlsx`)
-  } catch(e) {
+  } catch (e) {
     setError(e.message)
   } finally {
     $.LoadingOverlay('hide')
