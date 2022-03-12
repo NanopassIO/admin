@@ -7,12 +7,12 @@ const MAX_CONCURRENCY = 200;
 const CONTRACT_ADDRESS = '0xf54cc94f1f2f5de012b6aa51f1e7ebdc43ef5afc';
 const SNAPSHOT_ADDRESS = '0xf3fB3F2Dab388Dc0d868be4A349aa1e8939D315D';
 
-export const createContract = function () {
+export const createContract = function (): ethers.Contract {
   const provider = new ethers.providers.InfuraProvider('mainnet', process.env.INFURA_API_KEY);
   return new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
 };
 
-export const createSnapshotContract = function () {
+export const createSnapshotContract = function (): ethers.Contract {
   const provider = new ethers.providers.InfuraProvider('mainnet', process.env.INFURA_API_KEY);
   return new ethers.Contract(SNAPSHOT_ADDRESS, SNAPSHOT_ABI, provider);
 };

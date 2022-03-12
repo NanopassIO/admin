@@ -3,10 +3,10 @@ import AWS from 'aws-sdk';
 
 export class DynamoDB {
   client: AWS.DynamoDB.DocumentClient;
-  queryDB: any;
-  putDB: any;
-  scanDB: any;
-  getDB: any;
+  queryDB: (any) => Promise<any>;
+  putDB: (any) => Promise<any>;
+  scanDB: (any) => Promise<any>;
+  getDB: (any) => Promise<any>;
 
   constructor(props) {
     AWS.config.update(props);

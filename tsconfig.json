@@ -11,30 +11,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "incremental": true,
-    "baseUrl": "."
-  }
+    "baseUrl": ".",
+    "useUnknownInCatchVariables": false
+  },
+  "exclude": ["node_modules"]
 }
-
-// {
-//   "compilerOptions": {
-//     "target": "ES2020",
-//     "module": "commonjs",
-//     "outDir": "./built",
-//     // "strict": true,
-//     "noImplicitAny": false,
-//     "strictNullChecks": true,
-//     "checkJs": true,
-//     "allowJs": true,
-//     "moduleResolution": "node",
-//     "types": ["node", "jest"],
-//     "lib": ["es6"],
-//     "esModuleInterop": true,
-//     "skipLibCheck": true,
-//     "forceConsistentCasingInFileNames": true,
-//     "allowUnreachableCode": true,
-//     "resolveJsonModule": true,
-//     "useUnknownInCatchVariables": false // TypeScript 4.4+
-//   },
-//   "include": ["src/**/*", "functions/**/*", "e2e/**/*"],
-//   "exclude": ["node_modules"]
-// }
