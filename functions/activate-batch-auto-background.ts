@@ -5,7 +5,7 @@ import crypto from 'crypto'
 
 const MAX_CONCURRENCY = 200
 
-async function fetchPrizes (db: DynamoDB, batch: string) {
+async function fetchPrizes(db: DynamoDB, batch: string) {
   // Fetch list of prizes
   const result = await db.query('prizes', 'batch', batch)
   const prizesDb = result?.Items
@@ -21,7 +21,7 @@ async function fetchPrizes (db: DynamoDB, batch: string) {
   return prizes
 }
 
-async function getNextBatch (db: DynamoDB) {
+async function getNextBatch(db: DynamoDB) {
   const settingsItems = await db.scan('settings', 1)
   const settings = settingsItems.Items[0]
   const batch = settings.batch
@@ -38,7 +38,7 @@ async function getNextBatch (db: DynamoDB) {
     .join('-')
 }
 
-function assignPrizes (flatAddresses, prizes, holderBalance) {
+function assignPrizes(flatAddresses, prizes, holderBalance) {
   const prizeAssignment = {}
 
   while (prizes.length > 0) {
@@ -66,7 +66,7 @@ function assignPrizes (flatAddresses, prizes, holderBalance) {
   return prizeAssignment
 }
 
-export async function handle (_: any, db?: DynamoDB, contract?: any) {
+export async function handle(_: any, db?: DynamoDB, contract?: any) {
   if (!db) {
     db = new DynamoDB({
       region: process.env.REGION,
@@ -89,8 +89,12 @@ export async function handle (_: any, db?: DynamoDB, contract?: any) {
   for (let i = 0; i < existingAddresses.length; i += MAX_CONCURRENCY) {
     await Promise.all(
       existingAddresses.slice(i, i + MAX_CONCURRENCY).map(async (a) => {
-        const fetchedAccount = (await db?.get('accounts', 'address', a.address)).Item
-        existingAccounts[a.address] = { ...getEmptyAccount(a.address), ...(fetchedAccount ?? {}) }
+        const fetchedAccount = (await db?.get('accounts', 'address', a.address))
+          .Item
+        existingAccounts[a.address] = {
+          ...getEmptyAccount(a.address),
+          ...(fetchedAccount ?? {})
+        }
       })
     )
     console.log(`Pulling accounts ${i} to ${i + MAX_CONCURRENCY}`)
@@ -139,7 +143,10 @@ export async function handle (_: any, db?: DynamoDB, contract?: any) {
         const badLuckCount = account.badLuckCount
         if (prizeArray) {
           // Minus `Math.ceil(badLuckCount / balance)` per prize
-          account.badLuckCount = Math.max(0, badLuckCount - prizeArray.length * Math.ceil(badLuckCount / balance))
+          account.badLuckCount = Math.max(
+            0,
+            badLuckCount - prizeArray.length * Math.ceil(badLuckCount / balance)
+          )
 
           // Add 1 per box without prize
           account.badLuckCount += Math.max(0, balance - prizeArray.length)

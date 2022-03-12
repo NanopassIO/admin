@@ -3,7 +3,7 @@ import { createContract, takeSnapshot } from '../src/eth'
 
 const MAX_CONCURRENCY = 200
 
-async function getNextBatch (db: DynamoDB) {
+async function getNextBatch(db: DynamoDB) {
   const settingsItems = await db.scan('settings', 1)
   const settings = settingsItems.Items[0]
   const batch = settings.batch
@@ -20,7 +20,7 @@ async function getNextBatch (db: DynamoDB) {
     .join('-')
 }
 
-export async function handle (_: any, db?: DynamoDB, contract?: any) {
+export async function handle(_: any, db?: DynamoDB, contract?: any) {
   if (!db) {
     db = new DynamoDB({
       region: process.env.REGION,

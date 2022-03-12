@@ -8,7 +8,7 @@ export class DynamoDB {
   scanDB: (any) => Promise<any>
   getDB: (any) => Promise<any>
 
-  constructor (props) {
+  constructor(props) {
     AWS.config.update(props)
     this.client = new AWS.DynamoDB.DocumentClient()
 
@@ -18,7 +18,7 @@ export class DynamoDB {
     this.getDB = util.promisify(this.client.get).bind(this.client)
   }
 
-  async query (table, attributes, values) {
+  async query(table, attributes, values) {
     if (!Array.isArray(attributes)) {
       attributes = [attributes]
     }
@@ -41,25 +41,27 @@ export class DynamoDB {
           [`:${a}`]: values[i]
         }))
       ),
-      KeyConditionExpression: attributes.map((a) => `#${a.slice(1, -1)} = :${a}`).join(' AND ')
+      KeyConditionExpression: attributes
+        .map((a) => `#${a.slice(1, -1)} = :${a}`)
+        .join(' AND ')
     })
   }
 
-  async put (table, values) {
+  async put(table, values) {
     return await this.putDB({
       TableName: table,
       Item: values
     })
   }
 
-  async scan (table, limit) {
+  async scan(table, limit) {
     return await this.scanDB({
       TableName: table,
       Limit: limit
     })
   }
 
-  async get (table, keyName, key) {
+  async get(table, keyName, key) {
     return await this.getDB({
       TableName: table,
       Key: {

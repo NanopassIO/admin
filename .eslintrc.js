@@ -1,9 +1,13 @@
 module.exports = {
-  extends: 'standard-with-typescript',
+  extends: [
+    'standard-with-typescript',
+    'plugin:@typescript-eslint/recommended',
+    'prettier'
+  ],
   parserOptions: {
     project: './tsconfig.json'
   },
-  ignorePatterns: ['public/**/*'],
+  ignorePatterns: ['public/**/*', '.github/**/*'],
   rules: {
     '@typescript-eslint/strict-boolean-expressions': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',

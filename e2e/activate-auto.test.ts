@@ -4,7 +4,7 @@ import { handle as preload } from '../functions/preload-batch-auto-background'
 import { handle as activate } from '../functions/activate-batch-auto-background'
 import { handle as addPrize } from '../functions/add-prize'
 
-async function countBoxes (db, batch) {
+async function countBoxes(db, batch) {
   const addresses = await db.query('batches', 'batch', batch)
   let boxCount = 0
   for (const address of addresses.Items) {
@@ -13,7 +13,7 @@ async function countBoxes (db, batch) {
   return boxCount
 }
 
-async function checkBadLuckCount (db, batch) {
+async function checkBadLuckCount(db, batch) {
   const addresses = await db.query('batches', 'batch', batch)
   for (const address of addresses.Items) {
     const numWonPrizes = JSON.parse(address.prizes).length

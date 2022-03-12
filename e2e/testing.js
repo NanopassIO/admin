@@ -1,5 +1,5 @@
 class MockDB {
-  constructor () {
+  constructor() {
     this.db = {
       batches: {},
       prizes: {},
@@ -20,7 +20,7 @@ class MockDB {
     }
   }
 
-  async query (table, attributes, values) {
+  async query(table, attributes, values) {
     if (!Array.isArray(attributes)) {
       attributes = [attributes]
     }
@@ -40,33 +40,35 @@ class MockDB {
     return { Items: this.db[table][values[0]] }
   }
 
-  async get (table, _, value) {
+  async get(table, _, value) {
     return { Item: this.db[table][value] }
   }
 
-  async put (table, values) {
+  async put(table, values) {
     if (this.sortKeys[table]) {
       if (!this.db[table][values[this.primaryKeys[table]]]) {
         this.db[table][values[this.primaryKeys[table]]] = {}
       }
 
-      this.db[table][values[this.primaryKeys[table]]][values[this.sortKeys[table]]] = values
+      this.db[table][values[this.primaryKeys[table]]][
+        values[this.sortKeys[table]]
+      ] = values
     } else {
       this.db[table][values[this.primaryKeys[table]]] = values
     }
   }
 
-  async scan (table, limit) {
+  async scan(table, limit) {
     return { Items: Object.values(this.db[table]).flat().slice(0, limit) }
   }
 }
 
 class MockContractor {
-  constructor (addresses) {
+  constructor(addresses) {
     this.addresses = addresses
   }
 
-  async ownerOf (id) {
+  async ownerOf(id) {
     return this.addresses[id]
   }
 }

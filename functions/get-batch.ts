@@ -1,4 +1,8 @@
-import { HandlerEvent, HandlerContext, HandlerCallback } from '@netlify/functions'
+import {
+  HandlerEvent,
+  HandlerContext,
+  HandlerCallback
+} from '@netlify/functions'
 import { DynamoDB } from '../src/db'
 
 const db = new DynamoDB({
@@ -7,7 +11,7 @@ const db = new DynamoDB({
   secretAccessKey: process.env.SECRET_ACCESS_KEY
 })
 
-async function handle (data) {
+async function handle(data) {
   try {
     return await db.query('batches', 'batch', data.batch)
   } catch (e) {
@@ -15,7 +19,11 @@ async function handle (data) {
   }
 }
 
-export const handler = (event: HandlerEvent, context: HandlerContext, callback: HandlerCallback) => {
+export const handler = (
+  event: HandlerEvent,
+  context: HandlerContext,
+  callback: HandlerCallback
+) => {
   const json = JSON.parse(event.body || '')
   if (json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
@@ -26,7 +34,10 @@ export const handler = (event: HandlerEvent, context: HandlerContext, callback: 
 
   handle(json.data)
     .then((response) => {
-      return callback(null, { statusCode: 200, body: JSON.stringify(response) })
+      return callback(null, {
+        statusCode: 200,
+        body: JSON.stringify(response)
+      })
     })
     .catch((error) => {
       return callback(null, { statusCode: 500, body: JSON.stringify(error) })

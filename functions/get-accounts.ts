@@ -1,5 +1,9 @@
 import AWS from 'aws-sdk'
-import { HandlerEvent, HandlerContext, HandlerCallback } from '@netlify/functions'
+import {
+  HandlerEvent,
+  HandlerContext,
+  HandlerCallback
+} from '@netlify/functions'
 
 AWS.config.update({
   region: process.env.REGION,
@@ -21,7 +25,7 @@ const scanTable = async (params) => {
   return scanResults
 }
 
-async function handle () {
+async function handle() {
   try {
     const result = await scanTable({
       TableName: 'accounts'
@@ -32,7 +36,11 @@ async function handle () {
   }
 }
 
-export const handler = (event: HandlerEvent, context: HandlerContext, callback: HandlerCallback) => {
+export const handler = (
+  event: HandlerEvent,
+  context: HandlerContext,
+  callback: HandlerCallback
+) => {
   const json = JSON.parse(event.body || '')
   if (json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
@@ -43,7 +51,10 @@ export const handler = (event: HandlerEvent, context: HandlerContext, callback: 
 
   handle()
     .then((response) => {
-      return callback(null, { statusCode: 200, body: JSON.stringify(response) })
+      return callback(null, {
+        statusCode: 200,
+        body: JSON.stringify(response)
+      })
     })
     .catch((error) => {
       return callback(null, { statusCode: 500, body: JSON.stringify(error) })

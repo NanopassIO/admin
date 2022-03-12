@@ -7,7 +7,7 @@ const db = new DynamoDB({
   secretAccessKey: process.env.SECRET_ACCESS_KEY
 })
 
-async function handle (data) {
+async function handle(data) {
   try {
     const address = toChecksumAddress(data.address)
 
@@ -28,7 +28,10 @@ async function handle (data) {
 
 export const handler = (event, _, callback) => {
   const json = JSON.parse(event.body)
-  if (json.password !== process.env.PASSWORD || process.env.REGION !== 'us-east-1') {
+  if (
+    json.password !== process.env.PASSWORD ||
+    process.env.REGION !== 'us-east-1'
+  ) {
     console.log('Unauthorized access')
     return callback(null, {
       statusCode: 401
@@ -37,7 +40,10 @@ export const handler = (event, _, callback) => {
 
   handle(json.data)
     .then((response) => {
-      return callback(null, { statusCode: 200, body: JSON.stringify(response) })
+      return callback(null, {
+        statusCode: 200,
+        body: JSON.stringify(response)
+      })
     })
     .catch((error) => {
       return callback(null, { statusCode: 500, body: JSON.stringify(error) })
