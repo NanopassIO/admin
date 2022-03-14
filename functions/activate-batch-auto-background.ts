@@ -66,7 +66,7 @@ function assignPrizes(flatAddresses, prizes, holderBalance) {
   return prizeAssignment
 }
 
-export async function handle(_: any, db?: DynamoDB, contract?: any) {
+export async function handle(_?: any, db?: DynamoDB, contract?: any) {
   if (!db) {
     db = new DynamoDB({
       region: process.env.REGION,

@@ -13,6 +13,7 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/restrict-template-expressions': 'off',
     '@typescript-eslint/restrict-plus-operands': 'off',
-    '@typescript-eslint/return-await': 'off'
+    '@typescript-eslint/return-await': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off'
   }
 }

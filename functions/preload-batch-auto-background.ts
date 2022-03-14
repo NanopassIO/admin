@@ -20,7 +20,7 @@ async function getNextBatch(db: DynamoDB) {
     .join('-')
 }
 
-export async function handle(_: any, db?: DynamoDB, contract?: any) {
+export async function handle(_?: any, db?: DynamoDB, contract?: any) {
   if (!db) {
     db = new DynamoDB({
       region: process.env.REGION,

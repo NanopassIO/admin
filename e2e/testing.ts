@@ -1,4 +1,16 @@
-class MockDB {
+interface ICollection {
+  [key: string]: any
+}
+
+interface IObj {
+  [key: string]: string
+}
+
+export class MockDB {
+  db: ICollection
+  primaryKeys: IObj
+  sortKeys: IObj
+
   constructor() {
     this.db = {
       batches: {},
@@ -20,7 +32,7 @@ class MockDB {
     }
   }
 
-  async query(table, attributes, values) {
+  async query(table: string, attributes: [] | any, values: [] | any) {
     if (!Array.isArray(attributes)) {
       attributes = [attributes]
     }
@@ -40,11 +52,11 @@ class MockDB {
     return { Items: this.db[table][values[0]] }
   }
 
-  async get(table, _, value) {
+  async get(table: string, _: any, value: string) {
     return { Item: this.db[table][value] }
   }
 
-  async put(table, values) {
+  async put(table: string, values: IObj) {
     if (this.sortKeys[table]) {
       if (!this.db[table][values[this.primaryKeys[table]]]) {
         this.db[table][values[this.primaryKeys[table]]] = {}
@@ -58,13 +70,15 @@ class MockDB {
     }
   }
 
-  async scan(table, limit) {
+  async scan(table: string, limit: number) {
     return { Items: Object.values(this.db[table]).flat().slice(0, limit) }
   }
 }
 
-class MockContractor {
-  constructor(addresses) {
+export class MockContractor {
+  addresses: string[] = []
+
+  constructor(addresses: string[]) {
     this.addresses = addresses
   }
 
@@ -72,6 +86,3 @@ class MockContractor {
     return this.addresses[id]
   }
 }
-
-exports.MockDB = MockDB
-exports.MockContractor = MockContractor
