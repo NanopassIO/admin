@@ -3,24 +3,29 @@ const { toChecksumAddress } = require('ethereum-checksum-address')
 const { getEmptyAccount } = require("../src/account")
 
 async function handle(data, db, contract) {
-  if(!db) {
-    db = new DynamoDB({
-      region: process.env.REGION,
-      accessKeyId: process.env.ACCESS_KEY_ID,
-      secretAccessKey: process.env.SECRET_ACCESS_KEY,
-    })
+  try {
+    if(!db) {
+      db = new DynamoDB({
+        region: process.env.REGION,
+        accessKeyId: process.env.ACCESS_KEY_ID,
+        secretAccessKey: process.env.SECRET_ACCESS_KEY,
+      })
+    }
+
+    if(!contract) {
+      contract = createContract()
+    }
+
+    const address = toChecksumAddress(data.address)
+    const account = (await db.get('accounts', 'address', address)).Item ?? getEmptyAccount(address)
+
+    account.fragments += parseInt(data.amount)
+
+    await db.put('accounts', account)
+  } catch(e) {
+    console.log(e);
+    console.log(e.message);
   }
-
-  if(!contract) {
-    contract = createContract()
-  }
-  
-  const address = toChecksumAddress(data.address)
-  const account = (await db.get('accounts', 'address', address)).Item ?? getEmptyAccount(address)
-
-  account.fragments += parseInt(data.amount)
-
-  await db.put('accounts', account)
 }
 
 exports.handle = handle
