@@ -16,7 +16,8 @@ import {
   giveFragments,
   getAccounts,
   winners,
-  giveBalance
+  giveBalance,
+  addMarketplaceItem
 } from './functions.js'
 import { tabFunction, openDefaultTab } from './tabs.js'
 
@@ -82,8 +83,11 @@ function App() {
         >
           Prize Management
         </button>
-        <button class="tablinks" id="mm-button"
-          onClick=${() => tabFunction('mm-button','marketplace-management')}>
+        <button
+          class="tablinks"
+          id="mm-button"
+          onClick=${() => tabFunction('mm-button', 'marketplace-management')}
+        >
           Marketplace Management
         </button>
         <button
@@ -408,35 +412,78 @@ function App() {
         </div>
         <div class="input-group">
           <label for="marketplaceName">Marketplace Item Name:</label>
-          <input type="marketplaceName" onchange="${(e)=>{
-            setMarketplaceName(e.target.value)
-          }}" id="marketplaceName" name="marketplaceName" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
+          <input
+            type="marketplaceName"
+            onchange="${(e) => {
+              setMarketplaceName(e.target.value)
+            }}"
+            id="marketplaceName"
+            name="marketplaceName"
+            class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          />
         </div>
         <div class="input-group">
           <label for="marketplaceDesc">Marketplace Item Description:</label>
-          <textarea type="marketplaceDesc" id="marketplaceDesc" name="marketplaceDesc" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
+          <textarea
+            type="marketplaceDesc"
+            id="marketplaceDesc"
+            name="marketplaceDesc"
+            class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          />
         </div>
         <div class="input-group">
           <label for="marketplaceImage">Marketplace Item Image:</label>
-          <input type="marketplaceImage" onchange="${(e)=>{
-            setMarketplaceImage(e.target.value)
-          }}" id="marketplaceImage" name="marketplaceImage" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
+          <input
+            type="marketplaceImage"
+            onchange="${(e) => {
+              setMarketplaceImage(e.target.value)
+            }}"
+            id="marketplaceImage"
+            name="marketplaceImage"
+            class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          />
         </div>
         <div class="input-group">
           <label for="marketplaceSupply">Marketplace Item Max Supply:</label>
-          <input type="number" min="0" step="1" id="marketplaceSupply" name="marketplaceSupply" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            id="marketplaceSupply"
+            name="marketplaceSupply"
+            class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          />
         </div>
         <div class="input-group">
           <label for="marketplaceCost">Marketplace Item Fragment Cost:</label>
-          <input type="number" min="0" step="1" id="marketplaceCost" name="marketplaceCost" class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            id="marketplaceCost"
+            name="marketplaceCost"
+            class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          />
         </div>
-        <div class="input-group" style="margin: 1rem 1rem 0 1rem; flex-direction: row; align-items: center;">
-          <label for="marketplaceActive" style="margin: 0 1rem 0 0">Active?:</label>
-          <input type="checkbox" id="marketplaceActive" name="marketplaceActive" />
+        <div
+          class="input-group"
+          style="margin: 1rem 1rem 0 1rem; flex-direction: row; align-items: center;"
+        >
+          <label for="marketplaceActive" style="margin: 0 1rem 0 0"
+            >Active?:</label
+          >
+          <input
+            type="checkbox"
+            id="marketplaceActive"
+            name="marketplaceActive"
+          />
         </div>
-        <br/>
-        <button id="click"
-          onClick=${() => addMarketplaceItem({
+        <br />
+        <button
+          id="click"
+          onClick=${() =>
+            addMarketplaceItem(
+              {
                 password: $('#password').val(),
                 data: {
                   name: $('#marketplaceName').val().trim(),
@@ -444,12 +491,15 @@ function App() {
                   image: $('#marketplaceImage').val().trim(),
                   supply: $('#marketplaceSupply').val().trim(),
                   cost: $('#marketplaceCost').val().trim(),
-                  active: $('#marketplaceActive').is(":checked")
+                  active: $('#marketplaceActive').is(':checked')
                 }
-              }, setError)}
-          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-          Add Marketplace Item
-        </button><br/><br/>
+              },
+              setError
+            )}
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Add Marketplace Item</button
+        ><br /><br />
       </div>
 
       <div id="user-management" class="tabcontent">
