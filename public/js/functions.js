@@ -74,6 +74,21 @@ export async function addMarketplaceItem(params, setError) {
   await fetchResponse('/.netlify/functions/add-marketplace', params, setError)
 }
 
+export async function getMarketplaceItems() {
+  $.LoadingOverlay('show')
+  try {
+    const response = await fetch('/.netlify/functions/get-marketplace', {
+      method: 'POST'
+    })
+
+    return await response.json()
+  } catch (e) {
+    console.log(e.message)
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
+
 export async function giveFragments(params, setError) {
   await fetchResponse('/.netlify/functions/give-fragments', params, setError)
 }
