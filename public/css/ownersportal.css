@@ -1,4 +1,4 @@
-.inventory-item{
+.inventory-item {
   background-image: url('../assets/inventoryBG.png');
   background-size: cover;
   position: relative;
@@ -12,58 +12,58 @@
   height: 200px;
 }
 
-.open-next.btn{
+.open-next.btn {
   display: none;
 }
 
-.open-lootbox-video{
+.open-lootbox-video {
   display: none;
   height: 420px;
   padding-top: 0;
 }
 
-.lootBoxImage{
+.lootBoxImage {
   max-height: 310px;
 }
 
-.prizeImage{
+.prizeImage {
   margin-top: 50px;
   max-height: 310px;
 }
 
-.inventoryLabel{
-  font-family: "Iceberg", sans-serif;
+.inventoryLabel {
+  font-family: 'Iceberg', sans-serif;
   display: block;
   color: #eaebec;
 }
 
-.popupContainer{
+.popupContainer {
   padding-top: 10%;
 }
 
-.openBlackBoxText{
+.openBlackBoxText {
   padding-left: 50px;
   padding-right: 50px;
 }
 
-.openBlackBoxTitle{
+.openBlackBoxTitle {
   padding-top: 9px;
 }
 
-.inventory-heading{
+.inventory-heading {
   margin-top: 15px;
 }
-.inventory-description{
+.inventory-description {
   padding-left: 5%;
   padding-right: 5%;
 }
 
-.inventoryLabel{
-  font-family: "Iceberg", sans-serif;
+.inventoryLabel {
+  font-family: 'Iceberg', sans-serif;
   display: block;
 }
 
-.inventoryImage{
+.inventoryImage {
   max-width: 160px;
   max-height: 140px;
   margin: 5px;
