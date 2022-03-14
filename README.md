@@ -3,11 +3,11 @@
 ## Intro
 
 This codebase contains 2 main sections
+
 - Admin panel to administer the black box system
 - Scheduled scripts that run at regular intervals to trigger the black box raffle system
 
 ## Scripts
-
 
 The main scripts that are of note are `activate-batch-background.js` and `preload-batch-background.js`. `
 
