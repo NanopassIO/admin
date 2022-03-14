@@ -496,8 +496,8 @@ function App() {
           <br />
           <button
             id="click"
-            onClick=${() =>
-              addMarketplaceItem(
+            onClick=${async () => {
+              await addMarketplaceItem(
                 {
                   password: $('#password').val(),
                   data: {
@@ -510,7 +510,9 @@ function App() {
                   }
                 },
                 setError
-              )}
+              )
+              handleGetMarketplaceItems()
+            }}
             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           >
             Add/Update Marketplace Item</button
