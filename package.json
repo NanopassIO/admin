@@ -4,7 +4,8 @@
   "description": "",
   "scripts": {
     "test": "jest",
-    "lint": "npx eslint --fix ."
+    "lint": "npx eslint --fix .",
+    "activate": "ts-node -e \"import { handle } from './functions/activate-batch-auto-background'; handle()\""
   },
   "author": "",
   "license": "ISC",
