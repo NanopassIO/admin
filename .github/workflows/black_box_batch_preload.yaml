@@ -12,7 +12,7 @@ jobs:
         run: npm ci
       - name: Preload Next Batch
         run: |
-          ts-node -e "import { handle } from './functions/preload-batch-auto-background'; handle()"
+          npm run preload
         env:
           ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
           SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
