@@ -13,6 +13,7 @@ export function tabFunction(tabButton, tabName) {
   for (var i = 0; i < tablinks.length; i++) {
     tablinks[i].className = tablinks[i].className.replace(' active', '')
   }
-  document.getElementById(tabName).style.display = 'block'
+  document.getElementById(tabName).style.display =
+    tabName === 'marketplace-management' ? 'flex' : 'block'
   document.getElementById(tabButton).className += ' active'
 }
