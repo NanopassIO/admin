@@ -224,14 +224,12 @@ export async function winners(params, search, setError) {
 
     for (const batch of batchJson) {
       const prizeArray = JSON.parse(batch.claimed ? batch.claimed : '[]')
-      const discord = accountByAddress(batch.address)
-        ? accountByAddress(batch.address).discord
-        : 'Not found'
+      const account = accountByAddress(batch.address)
 
-      const wlAddress = accountByAddress(batch.address)
-        ? accountByAddress(batch.address).wlAddress
-          ? accountByAddress(batch.address).wlAddress
-          : accountByAddress(batch.address).address
+      const discord = account ? account.discord : 'Not found'
+
+      const wlAddress = account
+        ? account.wlAddress ?? account.address
         : 'Not found'
 
       for (const prize of prizeArray) {
