@@ -227,12 +227,20 @@ export async function winners(params, search, setError) {
       const discord = accountByAddress(batch.address)
         ? accountByAddress(batch.address).discord
         : 'Not found'
+
+      const wlAddress = accountByAddress(batch.address)
+        ? accountByAddress(batch.address).wlAddress
+          ? accountByAddress(batch.address).wlAddress
+          : accountByAddress(batch.address).address
+        : 'Not found'
+
       for (const prize of prizeArray) {
         if (prize.toLowerCase().includes(search) || search === null) {
           merged.push({
             prize: prize,
             address: batch.address,
-            discord: discord
+            discord: discord,
+            wlAddress: wlAddress
           })
         }
       }
