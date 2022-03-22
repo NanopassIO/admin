@@ -470,6 +470,17 @@ function App() {
             />
           </div>
           <div class="input-group">
+            <label for="marketplaceInstock">Marketplace Item Instock:</label>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              id="marketplaceInstock"
+              name="marketplaceInstock"
+              class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          </div>
+          <div class="input-group">
             <label for="marketplaceCost">Marketplace Item Fragment Cost:</label>
             <input
               type="number"
@@ -505,6 +516,7 @@ function App() {
                     description: $('#marketplaceDesc').val().trim(),
                     image: $('#marketplaceImage').val().trim(),
                     supply: $('#marketplaceSupply').val().trim(),
+                    instock: $('#marketplaceInstock').val().trim(),
                     cost: $('#marketplaceCost').val().trim(),
                     active: $('#marketplaceActive').is(':checked')
                   }
@@ -536,6 +548,7 @@ function App() {
                     $('#marketplaceDesc').val(i.description)
                     $('#marketplaceImage').val(i.image)
                     $('#marketplaceSupply').val(i.supply)
+                    $('#marketplaceInstock').val(i.instock)
                     $('#marketplaceCost').val(i.cost)
                     $('#marketplaceActive').prop('checked', i.active)
                   }}
