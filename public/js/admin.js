@@ -15,6 +15,7 @@ import {
   overrideActiveBatch,
   giveFragments,
   getAccounts,
+  getPurchases,
   winners,
   giveBalance,
   addMarketplaceItem,
@@ -528,6 +529,35 @@ function App() {
             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           >
             Add/Update Marketplace Item</button
+          ><br /><br />
+          <button
+            id="click"
+            onClick=${() =>
+              getPurchases(
+                {
+                  password: $('#password').val(),
+                  data: {
+                    name: $('#marketplaceName').val().trim()
+                  }
+                },
+                setError
+              )}
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Get Selected Item's Purchases</button
+          ><br /><br />
+          <button
+            id="click"
+            onClick=${() =>
+              getPurchases(
+                {
+                  password: $('#password').val()
+                },
+                setError
+              )}
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Get All Purchases</button
           ><br /><br />
         </div>
 
