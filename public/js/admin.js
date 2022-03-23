@@ -19,7 +19,8 @@ import {
   winners,
   giveBalance,
   addMarketplaceItem,
-  getMarketplaceItems
+  getMarketplaceItems,
+  uploadInvites
 } from './functions.js'
 import { tabFunction, openDefaultTab } from './tabs.js'
 
@@ -559,6 +560,25 @@ function App() {
           >
             Get All Purchases</button
           ><br /><br />
+          <input type="file" id="excelUpload" />
+          <input
+            type="button"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2 cursor-pointer"
+            id="upload"
+            value="Upload Invite Links for Selected Item (Excel only)"
+            onClick=${() =>
+              uploadInvites(
+                {
+                  password: $('#password').val(),
+                  data: {
+                    name: $('#marketplaceName').val().trim(),
+                    excelFile: $('#excelUpload').prop('files')
+                  }
+                },
+                setError
+              )}
+          />
+          <br /><br />
         </div>
 
         <div style="width: 100%;">

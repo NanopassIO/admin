@@ -290,3 +290,43 @@ export async function winners(params, search, setError) {
     $.LoadingOverlay('hide')
   }
 }
+
+export async function uploadInvites(params, setError) {
+  $.LoadingOverlay('show')
+  const file = params.data.excelFile[0]
+
+  const addInv = async (inv) => {
+    return await fetch('/.netlify/functions/add-invite', {
+      body: JSON.stringify({
+        password: params.password,
+        data: {
+          invite: inv.invites,
+          itemName: inv.itemName
+        }
+      }),
+      method: 'POST'
+    })
+  }
+
+  try {
+    const data = await file.arrayBuffer()
+    const workbook = XLSX.read(data)
+    const json = XLSX.utils.sheet_to_json(
+      workbook.Sheets[workbook.SheetNames[0]]
+    )
+
+    const uploadAllInvites = json.map((inv) => addInv(inv))
+    Promise.all(uploadAllInvites)
+      .then((result) => {
+        console.log(result)
+        alert(`${file.name} uploaded`)
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  } catch (e) {
+    setError(e.message)
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
