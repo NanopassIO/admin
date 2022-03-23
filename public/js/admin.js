@@ -16,7 +16,9 @@ import {
   giveFragments,
   getAccounts,
   winners,
-  giveBalance
+  giveBalance,
+  addMarketplaceItem,
+  getMarketplaceItems
 } from './functions.js'
 import { tabFunction, openDefaultTab } from './tabs.js'
 
@@ -41,11 +43,22 @@ function App() {
   const [activeBatch, setActiveBatch] = useState('')
   const [inventoryImage, setInventoryImage] = useState('')
   const [inventoryName, setInventoryName] = useState('')
+  const [marketplaceImage, setMarketplaceImage] = useState('')
+  const [marketplaceName, setMarketplaceName] = useState('')
+  const [marketplaceItems, setMarketplaceItems] = useState([])
+
+  const handleGetMarketplaceItems = async () => {
+    const results = await getMarketplaceItems()
+    setMarketplaceItems(results)
+  }
+
   useEffect(() => {
     getActiveBatch(setError).then((settings) => {
       setActiveBatch(settings.batch)
     })
+    handleGetMarketplaceItems()
   }, [activeBatch])
+
   return html`
     <label for="password">Password:</label>
     <input
@@ -79,6 +92,13 @@ function App() {
           onClick=${() => tabFunction('pm-button', 'prize-management')}
         >
           Prize Management
+        </button>
+        <button
+          class="tablinks"
+          id="mm-button"
+          onClick=${() => tabFunction('mm-button', 'marketplace-management')}
+        >
+          Marketplace Management
         </button>
         <button
           class="tablinks"
@@ -390,6 +410,160 @@ function App() {
         >
           Delete Prize</button
         ><br /><br />
+      </div>
+
+      <div
+        id="marketplace-management"
+        class="tabcontent"
+        style="gap: 2%; width: 100%;"
+      >
+        <div>
+          <h1>Marketplace Management</h1>
+          <div class="inventory-item">
+            <picture>
+              <img src="${marketplaceImage}" class="inventoryImage" />
+            </picture>
+            <label class="inventoryLabel">${marketplaceName}</label>
+          </div>
+          <div class="input-group">
+            <label for="marketplaceName">Marketplace Item Name:</label>
+            <input
+              type="marketplaceName"
+              onchange="${(e) => {
+                setMarketplaceName(e.target.value)
+              }}"
+              id="marketplaceName"
+              name="marketplaceName"
+              class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          </div>
+          <div class="input-group">
+            <label for="marketplaceDesc">Marketplace Item Description:</label>
+            <textarea
+              type="marketplaceDesc"
+              id="marketplaceDesc"
+              name="marketplaceDesc"
+              class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          </div>
+          <div class="input-group">
+            <label for="marketplaceImage">Marketplace Item Image:</label>
+            <input
+              type="marketplaceImage"
+              onchange="${(e) => {
+                setMarketplaceImage(e.target.value)
+              }}"
+              id="marketplaceImage"
+              name="marketplaceImage"
+              class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          </div>
+          <div class="input-group">
+            <label for="marketplaceSupply">Marketplace Item Max Supply:</label>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              id="marketplaceSupply"
+              name="marketplaceSupply"
+              class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          </div>
+          <div class="input-group">
+            <label for="marketplaceInstock">Marketplace Item Instock:</label>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              id="marketplaceInstock"
+              name="marketplaceInstock"
+              class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          </div>
+          <div class="input-group">
+            <label for="marketplaceCost">Marketplace Item Fragment Cost:</label>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              id="marketplaceCost"
+              name="marketplaceCost"
+              class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          </div>
+          <div
+            class="input-group"
+            style="margin: 1rem 1rem 0 1rem; flex-direction: row; align-items: center;"
+          >
+            <label for="marketplaceActive" style="margin: 0 1rem 0 0"
+              >Active?:</label
+            >
+            <input
+              type="checkbox"
+              id="marketplaceActive"
+              name="marketplaceActive"
+            />
+          </div>
+          <br />
+          <button
+            id="click"
+            onClick=${async () => {
+              await addMarketplaceItem(
+                {
+                  password: $('#password').val(),
+                  data: {
+                    name: $('#marketplaceName').val().trim(),
+                    description: $('#marketplaceDesc').val().trim(),
+                    image: $('#marketplaceImage').val().trim(),
+                    supply: $('#marketplaceSupply').val().trim(),
+                    instock: $('#marketplaceInstock').val().trim(),
+                    cost: $('#marketplaceCost').val().trim(),
+                    active: $('#marketplaceActive').is(':checked')
+                  }
+                },
+                setError
+              )
+              handleGetMarketplaceItems()
+            }}
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Add/Update Marketplace Item</button
+          ><br /><br />
+        </div>
+
+        <div style="width: 100%;">
+          <h1>All marketplace listings</h1>
+          <div
+            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px;"
+          >
+            ${marketplaceItems.map(
+              (i) =>
+                html`<div
+                  style="padding: 8px; border: 1px solid ${i.active
+                    ? 'green'
+                    : 'red'}; border-radius: 8px; cursor: pointer;"
+                  onClick=${() => {
+                    setMarketplaceImage(i.image)
+                    $('#marketplaceName').val(i.name)
+                    $('#marketplaceDesc').val(i.description)
+                    $('#marketplaceImage').val(i.image)
+                    $('#marketplaceSupply').val(i.supply)
+                    $('#marketplaceInstock').val(i.instock)
+                    $('#marketplaceCost').val(i.cost)
+                    $('#marketplaceActive').prop('checked', i.active)
+                  }}
+                >
+                  <img src="${i.image}" class="inventoryImage" />
+                  <h6>Name: <b>${i.name}</b></h6>
+                  <p>Description: <b>${i.description}</b></p>
+                  <p>Cost: <b>${i.cost}</b></p>
+                  <p>Supply: <b>${i.supply}</b></p>
+                  <p>Instock: <b>${i.instock}</b></p>
+                  <p>Active: <b>${i.active ? 'True' : 'False'}</b></p>
+                </div>`
+            )}
+          </div>
+        </div>
       </div>
 
       <div id="user-management" class="tabcontent">
