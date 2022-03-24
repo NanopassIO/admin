@@ -154,18 +154,27 @@ export async function getAddressLogs(params, setError) {
     }
 
     const json = await response.json()
-    const converted = json.Items.map((x) => ({
-      ...x,
-      address: performAddressReplacement(x.address),
-      activity: x.activity,
-      oldFrags: x.oldFrags,
-      newFrags: x.newFrags,
-      oldInv: (x.oldInv ? getInvItemNames(x.oldInv) : []).join('+'),
-      newInv: (x.newInv ? getInvItemNames(x.newInv) : []).join('+'),
-      prize: x.prize ? x.prize.name : '',
-      receivingAddress: x.receivingAddress,
-      sentFrags: x.sentFrags
-    }))
+    const converted = json.Items.map((x) => {
+      const dateObject = new Date(x.timestamp)
+      const readableDate = dateObject.toLocaleString('en-NZ', {
+        timeZone: 'Pacific/Auckland',
+        timeZoneName: 'short'
+      })
+
+      return {
+        ...x,
+        address: performAddressReplacement(x.address),
+        activity: x.activity,
+        oldFrags: x.oldFrags,
+        newFrags: x.newFrags,
+        oldInv: (x.oldInv ? getInvItemNames(x.oldInv) : []).join('+'),
+        newInv: (x.newInv ? getInvItemNames(x.newInv) : []).join('+'),
+        prize: x.prize ? x.prize.name : '',
+        receivingAddress: x.receivingAddress,
+        sentFrags: x.sentFrags,
+        timestamp: readableDate
+      }
+    })
 
     const ws = XLSX.utils.json_to_sheet(converted, {
       header: [
@@ -177,12 +186,13 @@ export async function getAddressLogs(params, setError) {
         'newInv',
         'prize',
         'receivingAddress',
-        'sentFrags'
+        'sentFrags',
+        'timestamp'
       ]
     })
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Logs')
-    XLSX.writeFile(wb, 'Logs.xlsx')
+    XLSX.writeFile(wb, `Logs (${params.data.address}).xlsx`)
   } catch (e) {
     setError(e.message)
   } finally {
