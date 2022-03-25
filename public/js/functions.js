@@ -278,9 +278,9 @@ export async function winners(params, search, setError) {
         if (prize.toLowerCase().includes(search) || search === null) {
           merged.push({
             prize: prize,
-            address: batch.address,
+            address: wlAddress,
             discord: discord,
-            wlAddress: wlAddress
+            originalAddress: account.address
           })
         }
       }
@@ -289,7 +289,7 @@ export async function winners(params, search, setError) {
     const ws = XLSX.utils.json_to_sheet(merged)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Winners')
-    XLSX.writeFile(wb, `${search}_winners.xlsx`)
+    XLSX.writeFile(wb, `${search ?? 'nft & wl'}_winners.xlsx`)
   } catch (e) {
     setError(e.message)
   } finally {
