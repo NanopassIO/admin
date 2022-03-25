@@ -15,6 +15,7 @@ import {
   overrideActiveBatch,
   giveFragments,
   getAccounts,
+  getPurchases,
   winners,
   giveBalance,
   addMarketplaceItem,
@@ -470,6 +471,17 @@ function App() {
             />
           </div>
           <div class="input-group">
+            <label for="marketplaceInstock">Marketplace Item Instock:</label>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              id="marketplaceInstock"
+              name="marketplaceInstock"
+              class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          </div>
+          <div class="input-group">
             <label for="marketplaceCost">Marketplace Item Fragment Cost:</label>
             <input
               type="number"
@@ -505,6 +517,7 @@ function App() {
                     description: $('#marketplaceDesc').val().trim(),
                     image: $('#marketplaceImage').val().trim(),
                     supply: $('#marketplaceSupply').val().trim(),
+                    instock: $('#marketplaceInstock').val().trim(),
                     cost: $('#marketplaceCost').val().trim(),
                     active: $('#marketplaceActive').is(':checked')
                   }
@@ -516,6 +529,35 @@ function App() {
             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           >
             Add/Update Marketplace Item</button
+          ><br /><br />
+          <button
+            id="click"
+            onClick=${() =>
+              getPurchases(
+                {
+                  password: $('#password').val(),
+                  data: {
+                    name: $('#marketplaceName').val().trim()
+                  }
+                },
+                setError
+              )}
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Get Selected Item's Purchases</button
+          ><br /><br />
+          <button
+            id="click"
+            onClick=${() =>
+              getPurchases(
+                {
+                  password: $('#password').val()
+                },
+                setError
+              )}
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Get All Purchases</button
           ><br /><br />
         </div>
 
@@ -536,6 +578,7 @@ function App() {
                     $('#marketplaceDesc').val(i.description)
                     $('#marketplaceImage').val(i.image)
                     $('#marketplaceSupply').val(i.supply)
+                    $('#marketplaceInstock').val(i.instock)
                     $('#marketplaceCost').val(i.cost)
                     $('#marketplaceActive').prop('checked', i.active)
                   }}
