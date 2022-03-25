@@ -18,7 +18,7 @@ export async function handle(data: any, db?: DynamoDB) {
     description: data.description,
     image: data.image,
     supply: parseInt(data.supply),
-    instock: parseInt(data.supply),
+    instock: parseInt(data.instock),
     cost: parseInt(data.cost),
     active: data.active
   })

@@ -250,6 +250,48 @@ export async function getAccounts(params, setError) {
   }
 }
 
+export async function getPurchases(params, setError) {
+  $.LoadingOverlay('show')
+  try {
+    const response = await fetch('/.netlify/functions/get-purchases', {
+      body: JSON.stringify(params),
+      method: 'POST'
+    })
+
+    const objToStr = (obj) => {
+      return Object.keys(obj)
+        .map((k) => `${k}: ${obj[k]}`)
+        .join(' | ')
+    }
+
+    const json = await response.json()
+    const converted = json.map((x) => ({
+      ...x,
+      address: performAddressReplacement(x.address),
+      itemData: objToStr(JSON.parse(x.itemData)),
+      itemName: x.itemName
+    }))
+
+    const ws = XLSX.utils.json_to_sheet(converted, {
+      header: ['address', 'itemData', 'itemName']
+    })
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(
+      wb,
+      ws,
+      params.data ? `${params.data.name} Purchases` : 'Purchases'
+    )
+    XLSX.writeFile(
+      wb,
+      params.data ? `${params.data.name} Purchases.xlsx` : 'Purchases.xlsx'
+    )
+  } catch (e) {
+    setError(e.message)
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
+
 export async function winners(params, search, setError) {
   $.LoadingOverlay('show')
   try {
