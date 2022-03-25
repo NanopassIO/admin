@@ -169,7 +169,7 @@ export async function getAddressLogs(params, setError) {
         newFrags: x.newFrags,
         oldInv: (x.oldInv ? getInvItemNames(x.oldInv) : []).join('+'),
         newInv: (x.newInv ? getInvItemNames(x.newInv) : []).join('+'),
-        prize: x.prize ? x.prize.name : '',
+        prize: x.prize ? x.prize.name ?? x.prize : '',
         receivingAddress: x.receivingAddress,
         sentFrags: x.sentFrags,
         timestamp: readableDate
