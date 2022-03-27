@@ -266,15 +266,21 @@ export async function winners(params, search, setError) {
 
     for (const batch of batchJson) {
       const prizeArray = JSON.parse(batch.claimed ? batch.claimed : '[]')
-      const discord = accountByAddress(batch.address)
-        ? accountByAddress(batch.address).discord
+      const account = accountByAddress(batch.address)
+
+      const discord = account ? account.discord : 'Not found'
+
+      const wlAddress = account
+        ? account.wlAddress ?? account.address
         : 'Not found'
+
       for (const prize of prizeArray) {
         if (prize.toLowerCase().includes(search) || search === null) {
           merged.push({
             prize: prize,
-            address: batch.address,
-            discord: discord
+            address: wlAddress,
+            discord: discord,
+            originalAddress: account.address
           })
         }
       }
@@ -283,7 +289,7 @@ export async function winners(params, search, setError) {
     const ws = XLSX.utils.json_to_sheet(merged)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Winners')
-    XLSX.writeFile(wb, `${search}_winners.xlsx`)
+    XLSX.writeFile(wb, `${search ?? 'nft & wl'}_winners.xlsx`)
   } catch (e) {
     setError(e.message)
   } finally {
