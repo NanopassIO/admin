@@ -12,7 +12,6 @@ const db = new DynamoDB({
 })
 
 async function handle(data) {
-  console.log(data)
   try {
     return await db.query('accounts', 'address', data.address)
   } catch (e) {
