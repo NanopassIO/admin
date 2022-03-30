@@ -205,27 +205,61 @@ export async function getPurchases(params, setError) {
         .join(' | ')
     }
 
-    const json = await response.json()
-    const converted = json.map((x) => ({
-      ...x,
-      address: performAddressReplacement(x.address),
-      itemData: objToStr(JSON.parse(x.itemData)),
-      itemName: x.itemName
-    }))
+    const getSingleAddressDiscord = async (x) => {
+      try {
+        const response = await fetch('/.netlify/functions/get-account', {
+          body: JSON.stringify({
+            data: { address: x.address },
+            password: params.password
+          }),
+          method: 'POST'
+        })
+        const json = await response.json()
 
-    const ws = XLSX.utils.json_to_sheet(converted, {
-      header: ['address', 'itemData', 'itemName']
+        return {
+          ...x,
+          address: performAddressReplacement(x.address),
+          itemData: objToStr(JSON.parse(x.itemData)),
+          itemName: x.itemName,
+          discord: json.Items[0].discord ?? '',
+          discordDeveloperID: json.Items[0].discordDevId ?? ''
+        }
+      } catch (e) {
+        throw e
+      }
+    }
+
+    const json = await response.json()
+    const converted = json.map((x) => {
+      return getSingleAddressDiscord(x)
     })
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(
-      wb,
-      ws,
-      params.data ? `${params.data.name} Purchases` : 'Purchases'
-    )
-    XLSX.writeFile(
-      wb,
-      params.data ? `${params.data.name} Purchases.xlsx` : 'Purchases.xlsx'
-    )
+
+    Promise.all(converted)
+      .then((result) => {
+        const ws = XLSX.utils.json_to_sheet(result, {
+          header: [
+            'address',
+            'itemData',
+            'itemName',
+            'discord',
+            'discordDeveloperID'
+          ]
+        })
+        const wb = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(
+          wb,
+          ws,
+          params.data ? `${params.data.name} Purchases` : 'Purchases'
+        )
+        XLSX.writeFile(
+          wb,
+          params.data ? `${params.data.name} Purchases.xlsx` : 'Purchases.xlsx'
+        )
+      })
+      .catch((err) => {
+        console.log(err)
+        throw err
+      })
   } catch (e) {
     setError(e.message)
   } finally {
