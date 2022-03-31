@@ -141,6 +141,65 @@ export async function getBatch(params, setError) {
   }
 }
 
+export async function getAddressLogs(params, setError) {
+  $.LoadingOverlay('show')
+  try {
+    const response = await fetch('/.netlify/functions/get-address-logs', {
+      body: JSON.stringify(params),
+      method: 'POST'
+    })
+
+    const getInvItemNames = (inv) => {
+      return JSON.parse(inv).map((i) => i.name)
+    }
+
+    const json = await response.json()
+    const converted = json.Items.map((x) => {
+      const dateObject = new Date(x.timestamp)
+      const readableDate = dateObject.toLocaleString('en-NZ', {
+        timeZone: 'Pacific/Auckland',
+        timeZoneName: 'short'
+      })
+
+      return {
+        ...x,
+        address: performAddressReplacement(x.address),
+        activity: x.activity,
+        oldFrags: x.oldFrags,
+        newFrags: x.newFrags,
+        oldInv: (x.oldInv ? getInvItemNames(x.oldInv) : []).join('+'),
+        newInv: (x.newInv ? getInvItemNames(x.newInv) : []).join('+'),
+        prize: x.prize ? x.prize.name ?? x.prize : '',
+        receivingAddress: x.receivingAddress,
+        sentFrags: x.sentFrags,
+        timestamp: readableDate
+      }
+    })
+
+    const ws = XLSX.utils.json_to_sheet(converted, {
+      header: [
+        'address',
+        'activity',
+        'oldFrags',
+        'newFrags',
+        'oldInv',
+        'newInv',
+        'prize',
+        'receivingAddress',
+        'sentFrags',
+        'timestamp'
+      ]
+    })
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Logs')
+    XLSX.writeFile(wb, `Logs (${params.data.address}).xlsx`)
+  } catch (e) {
+    setError(e.message)
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
+
 export async function getPrizeList(params, setError) {
   $.LoadingOverlay('show')
   try {
