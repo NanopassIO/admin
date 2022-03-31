@@ -226,12 +226,12 @@ export async function getPurchases(params, setError) {
       const acc = accountByAddress(x.address)
       return {
         ...x,
-        address: performAddressReplacement(x.address),
+        address: acc.wlAddress ?? performAddressReplacement(x.address),
         itemData: objToStr(JSON.parse(x.itemData)),
         itemName: x.itemName,
         discord: acc.discord ?? '',
         discordDeveloperID: acc.discordDevId ?? '',
-        wlAddress: acc.wlAddress ?? ''
+        originalAddress: performAddressReplacement(x.address)
       }
     })
 
@@ -242,7 +242,7 @@ export async function getPurchases(params, setError) {
         'itemName',
         'discord',
         'discordDeveloperID',
-        'wlAddress'
+        'originalAddress'
       ]
     })
 
