@@ -12,6 +12,26 @@ const ADDRESS_MAPPING = {
   '0xcdA2E4b965eCa883415107b624e971c4Cefc4D8C':
     '0xEfEE7fD9aF43945E7b7D9655592600A6a63eFf0D'
 }
+function handleError(response) {
+  if (!response.ok) {
+    switch (response.status) {
+      case 400:
+        // throw new Error(`${response.status}, ${response.statusText}`)
+        throw new Error('Bad/invalid request.')
+      case 401:
+        throw new Error('Please enter a valid password.')
+      case 403:
+        throw new Error('Sorry, you do not have the permission to access the requested resource.')
+      case 404:
+        throw new Error('Sorry, request not found.')
+      case 405:
+        throw new Error('Unable to access the requested resource.')
+      case 500:
+        throw new Error('Something went wrong.')
+    }
+    
+  }
+}
 
 async function fetchResponse(url, params, setError) {
   $.LoadingOverlay('show')
@@ -20,9 +40,10 @@ async function fetchResponse(url, params, setError) {
       body: JSON.stringify(params),
       method: 'POST'
     })
-    if (!response.ok) {
-      throw new Error('An error occurred')
-    }
+    // if (!response.ok) {
+    //   throw new Error('An error occurred')
+    // }
+    handleError(response)
   } catch (e) {
     setError(e.message)
   } finally {
@@ -80,7 +101,7 @@ export async function getMarketplaceItems() {
     const response = await fetch('/.netlify/functions/get-marketplace', {
       method: 'POST'
     })
-
+    handleError(response)
     return await response.json()
   } catch (e) {
     console.log(e.message)
@@ -99,6 +120,7 @@ export async function getActiveBatch(setError) {
     const response = await fetch('/.netlify/functions/get-active-batch', {
       method: 'POST'
     })
+    handleError(response)
 
     return await response.json()
   } catch (e) {
@@ -120,6 +142,8 @@ export async function getBatch(params, setError) {
       method: 'POST'
     })
 
+    handleError(response)
+  
     const json = await response.json()
     const converted = json.Items.map((x) => ({
       ...x,
@@ -149,6 +173,8 @@ export async function getPrizeList(params, setError) {
       method: 'POST'
     })
 
+    handleError(response)
+
     const json = await response.json()
     const ws = XLSX.utils.json_to_sheet(json.Items)
     const wb = XLSX.utils.book_new()
@@ -169,6 +195,8 @@ export async function getAccounts(params, setError) {
       method: 'POST'
     })
 
+    handleError(response)
+    
     const json = await response.json()
     const converted = json.map((x) => ({
       ...x,
@@ -198,6 +226,7 @@ export async function getPurchases(params, setError) {
       body: JSON.stringify(params),
       method: 'POST'
     })
+    handleError(accountsResponse)
 
     const accountsJson = (await accountsResponse.json()).map((x) => ({
       ...x,
@@ -214,6 +243,7 @@ export async function getPurchases(params, setError) {
       body: JSON.stringify(params),
       method: 'POST'
     })
+    handleError(response)
 
     const objToStr = (obj) => {
       return Object.keys(obj)
@@ -268,6 +298,7 @@ export async function winners(params, search, setError) {
       body: JSON.stringify(params),
       method: 'POST'
     })
+    handleError(accountsResponse)
 
     const accountsJson = (await accountsResponse.json()).map((x) => ({
       ...x,
@@ -278,6 +309,7 @@ export async function winners(params, search, setError) {
       body: JSON.stringify(params),
       method: 'POST'
     })
+    handleError(batchResponse)
 
     const batchJson = (await batchResponse.json()).Items.map((x) => ({
       ...x,
