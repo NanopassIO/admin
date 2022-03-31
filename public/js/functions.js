@@ -172,6 +172,7 @@ export async function getAddressLogs(params, setError) {
       body: JSON.stringify(params),
       method: 'POST'
     })
+    handleError(response)
 
     const getInvItemNames = (inv) => {
       return JSON.parse(inv).map((i) => i.name)
@@ -302,6 +303,8 @@ export async function getPurchases(params, setError) {
           }),
           method: 'POST'
         })
+        handleError(response)
+        
         const json = await response.json()
 
         return {
