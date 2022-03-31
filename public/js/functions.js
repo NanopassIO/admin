@@ -230,7 +230,8 @@ export async function getPurchases(params, setError) {
         itemData: objToStr(JSON.parse(x.itemData)),
         itemName: x.itemName,
         discord: acc.discord ?? '',
-        discordDeveloperID: acc.discordDevId ?? ''
+        discordDeveloperID: acc.discordDevId ?? '',
+        wlAddress: acc.wlAddress ?? ''
       }
     })
 
@@ -240,7 +241,8 @@ export async function getPurchases(params, setError) {
         'itemData',
         'itemName',
         'discord',
-        'discordDeveloperID'
+        'discordDeveloperID',
+        'wlAddress'
       ]
     })
 
