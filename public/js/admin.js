@@ -650,7 +650,11 @@ function App() {
         ><br /><br />
         <button
           id="click"
-          onClick=${() =>
+          onClick=${() => {
+            if (!$('#userAddress').val()) {
+              alert('Please enter an address')
+              return
+            }
             getAddressLogs(
               {
                 password: $('#password').val(),
@@ -659,10 +663,11 @@ function App() {
                 }
               },
               setError
-            )}
+            )
+          }}
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
-          Get Address Logs</button
+          Get Address's Logs</button
         ><br /><br />
         <div class="input-group">
           <label for="balanceAmount">Give Balance (Testing only):</label>
