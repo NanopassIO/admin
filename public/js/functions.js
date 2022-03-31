@@ -194,6 +194,22 @@ export async function getAccounts(params, setError) {
 export async function getPurchases(params, setError) {
   $.LoadingOverlay('show')
   try {
+    const accountsResponse = await fetch('/.netlify/functions/get-accounts', {
+      body: JSON.stringify(params),
+      method: 'POST'
+    })
+
+    const accountsJson = (await accountsResponse.json()).map((x) => ({
+      ...x,
+      address: performAddressReplacement(x.address)
+    }))
+
+    const accountByAddress = (addr) => {
+      return accountsJson.find((a) => {
+        return a.address === addr
+      })
+    }
+
     const response = await fetch('/.netlify/functions/get-purchases', {
       body: JSON.stringify(params),
       method: 'POST'
@@ -206,16 +222,28 @@ export async function getPurchases(params, setError) {
     }
 
     const json = await response.json()
-    const converted = json.map((x) => ({
-      ...x,
-      address: performAddressReplacement(x.address),
-      itemData: objToStr(JSON.parse(x.itemData)),
-      itemName: x.itemName
-    }))
+    const converted = json.map((x) => {
+      const acc = accountByAddress(x.address)
+      return {
+        ...x,
+        address: performAddressReplacement(x.address),
+        itemData: objToStr(JSON.parse(x.itemData)),
+        itemName: x.itemName,
+        discord: acc.discord ?? '',
+        discordDeveloperID: acc.discordDevId ?? ''
+      }
+    })
 
     const ws = XLSX.utils.json_to_sheet(converted, {
-      header: ['address', 'itemData', 'itemName']
+      header: [
+        'address',
+        'itemData',
+        'itemName',
+        'discord',
+        'discordDeveloperID'
+      ]
     })
+
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(
       wb,
@@ -266,15 +294,21 @@ export async function winners(params, search, setError) {
 
     for (const batch of batchJson) {
       const prizeArray = JSON.parse(batch.claimed ? batch.claimed : '[]')
-      const discord = accountByAddress(batch.address)
-        ? accountByAddress(batch.address).discord
+      const account = accountByAddress(batch.address)
+
+      const discord = account ? account.discord : 'Not found'
+
+      const wlAddress = account
+        ? account.wlAddress ?? account.address
         : 'Not found'
+
       for (const prize of prizeArray) {
         if (prize.toLowerCase().includes(search) || search === null) {
           merged.push({
             prize: prize,
-            address: batch.address,
-            discord: discord
+            address: wlAddress,
+            discord: discord,
+            originalAddress: account.address
           })
         }
       }
@@ -283,7 +317,7 @@ export async function winners(params, search, setError) {
     const ws = XLSX.utils.json_to_sheet(merged)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Winners')
-    XLSX.writeFile(wb, `${search}_winners.xlsx`)
+    XLSX.writeFile(wb, `${search ?? 'nft & wl'}_winners.xlsx`)
   } catch (e) {
     setError(e.message)
   } finally {
