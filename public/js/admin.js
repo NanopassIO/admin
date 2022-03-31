@@ -19,7 +19,8 @@ import {
   winners,
   giveBalance,
   addMarketplaceItem,
-  getMarketplaceItems
+  getMarketplaceItems,
+  getAddressLogs
 } from './functions.js'
 import { tabFunction, openDefaultTab } from './tabs.js'
 
@@ -646,6 +647,27 @@ function App() {
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
           Get Accounts</button
+        ><br /><br />
+        <button
+          id="click"
+          onClick=${() => {
+            if (!$('#userAddress').val()) {
+              alert('Please enter an address')
+              return
+            }
+            getAddressLogs(
+              {
+                password: $('#password').val(),
+                data: {
+                  address: $('#userAddress').val().trim()
+                }
+              },
+              setError
+            )
+          }}
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Get Address's Logs</button
         ><br /><br />
         <div class="input-group">
           <label for="balanceAmount">Give Balance (Testing only):</label>

@@ -165,6 +165,65 @@ export async function getBatch(params, setError) {
   }
 }
 
+export async function getAddressLogs(params, setError) {
+  $.LoadingOverlay('show')
+  try {
+    const response = await fetch('/.netlify/functions/get-address-logs', {
+      body: JSON.stringify(params),
+      method: 'POST'
+    })
+
+    const getInvItemNames = (inv) => {
+      return JSON.parse(inv).map((i) => i.name)
+    }
+
+    const json = await response.json()
+    const converted = json.Items.map((x) => {
+      const dateObject = new Date(x.timestamp)
+      const readableDate = dateObject.toLocaleString('en-NZ', {
+        timeZone: 'Pacific/Auckland',
+        timeZoneName: 'short'
+      })
+
+      return {
+        ...x,
+        address: performAddressReplacement(x.address),
+        activity: x.activity,
+        oldFrags: x.oldFrags,
+        newFrags: x.newFrags,
+        oldInv: (x.oldInv ? getInvItemNames(x.oldInv) : []).join('+'),
+        newInv: (x.newInv ? getInvItemNames(x.newInv) : []).join('+'),
+        prize: x.prize ? x.prize.name ?? x.prize : '',
+        receivingAddress: x.receivingAddress,
+        sentFrags: x.sentFrags,
+        timestamp: readableDate
+      }
+    })
+
+    const ws = XLSX.utils.json_to_sheet(converted, {
+      header: [
+        'address',
+        'activity',
+        'oldFrags',
+        'newFrags',
+        'oldInv',
+        'newInv',
+        'prize',
+        'receivingAddress',
+        'sentFrags',
+        'timestamp'
+      ]
+    })
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Logs')
+    XLSX.writeFile(wb, `Logs (${params.data.address}).xlsx`)
+  } catch (e) {
+    setError(e.message)
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
+
 export async function getPrizeList(params, setError) {
   $.LoadingOverlay('show')
   try {
@@ -222,23 +281,6 @@ export async function getAccounts(params, setError) {
 export async function getPurchases(params, setError) {
   $.LoadingOverlay('show')
   try {
-    const accountsResponse = await fetch('/.netlify/functions/get-accounts', {
-      body: JSON.stringify(params),
-      method: 'POST'
-    })
-    handleError(accountsResponse)
-
-    const accountsJson = (await accountsResponse.json()).map((x) => ({
-      ...x,
-      address: performAddressReplacement(x.address)
-    }))
-
-    const accountByAddress = (addr) => {
-      return accountsJson.find((a) => {
-        return a.address === addr
-      })
-    }
-
     const response = await fetch('/.netlify/functions/get-purchases', {
       body: JSON.stringify(params),
       method: 'POST'
@@ -251,43 +293,66 @@ export async function getPurchases(params, setError) {
         .join(' | ')
     }
 
+    const getSingleAddressDiscord = async (x) => {
+      try {
+        const response = await fetch('/.netlify/functions/get-account', {
+          body: JSON.stringify({
+            data: { address: x.address },
+            password: params.password
+          }),
+          method: 'POST'
+        })
+        const json = await response.json()
+
+        return {
+          ...x,
+          address: performAddressReplacement(x.address),
+          itemData: objToStr(JSON.parse(x.itemData)),
+          itemName: x.itemName,
+          discord: json.Items[0].discord ?? '',
+          discordDeveloperID: json.Items[0].discordDevId ?? ''
+        }
+      } catch (e) {
+        throw e
+      }
+    }
+
     const json = await response.json()
     const converted = json.map((x) => {
-      const acc = accountByAddress(x.address)
-      return {
-        ...x,
-        address: performAddressReplacement(x.address),
-        itemData: objToStr(JSON.parse(x.itemData)),
-        itemName: x.itemName,
-        discord: acc.discord ?? '',
-        discordDeveloperID: acc.discordDevId ?? ''
-      }
+      return getSingleAddressDiscord(x)
     })
 
-    const ws = XLSX.utils.json_to_sheet(converted, {
-      header: [
-        'address',
-        'itemData',
-        'itemName',
-        'discord',
-        'discordDeveloperID'
-      ]
-    })
-
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(
-      wb,
-      ws,
-      params.data ? `${params.data.name} Purchases` : 'Purchases'
-    )
-    XLSX.writeFile(
-      wb,
-      params.data ? `${params.data.name} Purchases.xlsx` : 'Purchases.xlsx'
-    )
+    Promise.all(converted)
+      .then((result) => {
+        const ws = XLSX.utils.json_to_sheet(result, {
+          header: [
+            'address',
+            'itemData',
+            'itemName',
+            'discord',
+            'discordDeveloperID'
+          ]
+        })
+        const wb = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(
+          wb,
+          ws,
+          params.data ? `${params.data.name} Purchases` : 'Purchases'
+        )
+        XLSX.writeFile(
+          wb,
+          params.data ? `${params.data.name} Purchases.xlsx` : 'Purchases.xlsx'
+        )
+        $.LoadingOverlay('hide')
+      })
+      .catch((err) => {
+        console.log(err)
+        $.LoadingOverlay('hide')
+        throw err
+      })
   } catch (e) {
-    setError(e.message)
-  } finally {
     $.LoadingOverlay('hide')
+    setError(e.message)
   }
 }
 
