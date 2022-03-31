@@ -13,6 +13,8 @@ const ADDRESS_MAPPING = {
     '0xEfEE7fD9aF43945E7b7D9655592600A6a63eFf0D'
 }
 
+const MAX_CONCURRENCY = 200
+
 async function fetchResponse(url, params, setError) {
   $.LoadingOverlay('show')
   try {
@@ -275,52 +277,51 @@ export async function getPurchases(params, setError) {
         })
         const json = await response.json()
 
-        return {
+        allAddressInfo.push({
           ...x,
           address: performAddressReplacement(x.address),
           itemData: objToStr(JSON.parse(x.itemData)),
           itemName: x.itemName,
           discord: json.Items[0].discord ?? '',
           discordDeveloperID: json.Items[0].discordDevId ?? ''
-        }
+        })
       } catch (e) {
         throw e
       }
     }
 
     const json = await response.json()
-    const converted = json.map((x) => {
-      return getSingleAddressDiscord(x)
-    })
 
-    Promise.all(converted)
-      .then((result) => {
-        const ws = XLSX.utils.json_to_sheet(result, {
-          header: [
-            'address',
-            'itemData',
-            'itemName',
-            'discord',
-            'discordDeveloperID'
-          ]
+    const allAddressInfo = []
+
+    for (let i = 0; i < json.length; i += MAX_CONCURRENCY) {
+      await Promise.all(
+        json.slice(i, i + MAX_CONCURRENCY).map((x) => {
+          return getSingleAddressDiscord(x)
         })
-        const wb = XLSX.utils.book_new()
-        XLSX.utils.book_append_sheet(
-          wb,
-          ws,
-          params.data ? `${params.data.name} Purchases` : 'Purchases'
-        )
-        XLSX.writeFile(
-          wb,
-          params.data ? `${params.data.name} Purchases.xlsx` : 'Purchases.xlsx'
-        )
-        $.LoadingOverlay('hide')
-      })
-      .catch((err) => {
-        console.log(err)
-        $.LoadingOverlay('hide')
-        throw err
-      })
+      )
+    }
+
+    const ws = XLSX.utils.json_to_sheet(allAddressInfo, {
+      header: [
+        'address',
+        'itemData',
+        'itemName',
+        'discord',
+        'discordDeveloperID'
+      ]
+    })
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(
+      wb,
+      ws,
+      params.data ? `${params.data.name} Purchases` : 'Purchases'
+    )
+    XLSX.writeFile(
+      wb,
+      params.data ? `${params.data.name} Purchases.xlsx` : 'Purchases.xlsx'
+    )
+    $.LoadingOverlay('hide')
   } catch (e) {
     $.LoadingOverlay('hide')
     setError(e.message)
