@@ -33,12 +33,14 @@ function handleError(response) {
   }
 }
 
-const scanAccountsWithPagination = async (params, scanConfig) => {
+const scanAccountsWithPagination = async (params, attributes = '') => {
   let LastEvaluatedKey = undefined;
   let scanResult = await fetch('/.netlify/functions/get-accounts', {
     body: JSON.stringify({
       ...params,
-      scanConfig
+      data: {
+        attributes: attributes
+      }
     }),
     method: 'POST'
   })
@@ -54,8 +56,8 @@ const scanAccountsWithPagination = async (params, scanConfig) => {
     const nextPage = await fetch('/.netlify/functions/get-accounts', {
       body: JSON.stringify({
         ...params,
-        scanConfig: {
-          ...scanConfig,
+        data: {
+          attributes: attributes,
           ExclusiveStartKey: LastEvaluatedKey
         }
       }),
@@ -293,7 +295,7 @@ export async function getPrizeList(params, setError) {
 export async function getAccounts(params, setError) {
   $.LoadingOverlay('show')
   try {
-    const combined = await scanAccountsWithPagination(params, { Limit: 1000 })
+    const combined = await scanAccountsWithPagination(params)
 
     const converted = combined.map((x) => ({
       ...x,
@@ -331,12 +333,8 @@ export async function getPurchases(params, setError) {
         .join(' | ')
     }
 
-    const allAccounts = await scanAccountsWithPagination(params, { 
-      Limit: 1000,
-      ProjectionExpression: 'discord, discordDevId'
-    })
-    
-    const accountsJson = (await allAccounts.json()).map((x) => ({
+    const allAccounts = await scanAccountsWithPagination(params, 'address, discord, discordDevId')
+    const accountsJson = allAccounts.map((x) => ({
       ...x,
       address: performAddressReplacement(x.address)
     }))
@@ -389,12 +387,9 @@ export async function getPurchases(params, setError) {
 export async function winners(params, search, setError) {
   $.LoadingOverlay('show')
   try {
-    const allAccounts = await scanAccountsWithPagination(params, { 
-      Limit: 1000,
-      ProjectionExpression: 'discord, address'
-    })
+    const allAccounts = await scanAccountsWithPagination(params, 'discord, address')
     
-    const accountsJson = (await allAccounts.json()).map((x) => ({
+    const accountsJson = allAccounts.map((x) => ({
       ...x,
       address: performAddressReplacement(x.address)
     }))

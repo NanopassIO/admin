@@ -15,12 +15,16 @@ AWS.config.update({
 const docClient = new AWS.DynamoDB.DocumentClient()
 const scan = util.promisify(docClient.scan).bind(docClient)
 
-async function handle(scanConfig) {
+async function handle(data) {
   try {
-    const result = await scan({
+    const scanConfig: { [k: string]: any } = {
       TableName: 'accounts',
-      ...scanConfig
-    })
+      Limit: 1000,
+    }
+    if (data?.attributes) scanConfig.ProjectionExpression = data.attributes
+    if (data?.ExclusiveStartKey) scanConfig.ExclusiveStartKey = data.ExclusiveStartKey
+
+    const result = await scan(scanConfig)
     return result
   } catch (e) {
     console.log(e.message)
@@ -40,7 +44,7 @@ export const handler = (
     })
   }
 
-  handle(json.scanConfig)
+  handle(json.data)
     .then((response) => {
       return callback(null, {
         statusCode: 200,
