@@ -33,6 +33,47 @@ function handleError(response) {
   }
 }
 
+const scanAccountsWithPagination = async (params, scanConfig) => {
+  let LastEvaluatedKey = undefined;
+  let scanResult = await fetch('/.netlify/functions/get-accounts', {
+    body: JSON.stringify({
+      ...params,
+      scanConfig
+    }),
+    method: 'POST'
+  })
+
+  handleError(scanResult)
+  
+  const scanResultJson = await scanResult.json()
+
+  let combined = scanResultJson.Items
+  LastEvaluatedKey = scanResultJson.LastEvaluatedKey
+  
+  while(LastEvaluatedKey) {
+    const nextPage = await fetch('/.netlify/functions/get-accounts', {
+      body: JSON.stringify({
+        ...params,
+        scanConfig: {
+          ...scanConfig,
+          ExclusiveStartKey: LastEvaluatedKey
+        }
+      }),
+      method: 'POST'
+    })
+
+    handleError(nextPage)
+    const nextPageJson = await nextPage.json()
+    
+    if(nextPageJson.Count === 0) break
+
+    combined = [...combined, ...nextPageJson.Items];
+    LastEvaluatedKey = nextPageJson.LastEvaluatedKey
+  }
+
+  return combined;
+}
+
 const MAX_CONCURRENCY = 200
 
 async function fetchResponse(url, params, setError) {
@@ -252,15 +293,9 @@ export async function getPrizeList(params, setError) {
 export async function getAccounts(params, setError) {
   $.LoadingOverlay('show')
   try {
-    const response = await fetch('/.netlify/functions/get-accounts', {
-      body: JSON.stringify(params),
-      method: 'POST'
-    })
+    const combined = await scanAccountsWithPagination(params, { Limit: 1000 })
 
-    handleError(response)
-    
-    const json = await response.json()
-    const converted = json.map((x) => ({
+    const converted = combined.map((x) => ({
       ...x,
       address: performAddressReplacement(x.address),
       inventory: JSON.parse(x.inventory ? x.inventory : '[]')
@@ -269,7 +304,7 @@ export async function getAccounts(params, setError) {
     }))
 
     const ws = XLSX.utils.json_to_sheet(converted, {
-      header: ['address', 'discord', 'fragments', 'inventory']
+      header: ['address', 'badLuckCount', 'discord', 'discordDevId', 'fragments', 'inventory']
     })
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Accounts')
@@ -296,45 +331,36 @@ export async function getPurchases(params, setError) {
         .join(' | ')
     }
 
-    const getSingleAddressDiscord = async (x) => {
-      try {
-        const response = await fetch('/.netlify/functions/get-account', {
-          body: JSON.stringify({
-            data: { address: x.address },
-            password: params.password
-          }),
-          method: 'POST'
-        })
-        handleError(response)
-        
-        const json = await response.json()
+    const allAccounts = await scanAccountsWithPagination(params, { 
+      Limit: 1000,
+      ProjectionExpression: 'discord, discordDevId'
+    })
+    
+    const accountsJson = (await allAccounts.json()).map((x) => ({
+      ...x,
+      address: performAddressReplacement(x.address)
+    }))
 
-        allAddressInfo.push({
-          ...x,
-          address: performAddressReplacement(x.address),
-          itemData: objToStr(JSON.parse(x.itemData)),
-          itemName: x.itemName,
-          discord: json.Items[0].discord ?? '',
-          discordDeveloperID: json.Items[0].discordDevId ?? ''
-        })
-      } catch (e) {
-        throw e
-      }
+    const accountByAddress = (addr) => {
+      return accountsJson.find((a) => {
+        return a.address === addr
+      })
     }
 
     const json = await response.json()
+    const converted = json.map((x) => {
+      const acc = accountByAddress(x.address)
+      return {
+        ...x,
+        address: performAddressReplacement(x.address),
+        itemData: objToStr(JSON.parse(x.itemData)),
+        itemName: x.itemName,
+        discord: acc.discord ?? '',
+        discordDeveloperID: acc.discordDevId ?? ''
+      }
+    })
 
-    const allAddressInfo = []
-
-    for (let i = 0; i < json.length; i += MAX_CONCURRENCY) {
-      await Promise.all(
-        json.slice(i, i + MAX_CONCURRENCY).map((x) => {
-          return getSingleAddressDiscord(x)
-        })
-      )
-    }
-
-    const ws = XLSX.utils.json_to_sheet(allAddressInfo, {
+    const ws = XLSX.utils.json_to_sheet(converted, {
       header: [
         'address',
         'itemData',
@@ -363,13 +389,12 @@ export async function getPurchases(params, setError) {
 export async function winners(params, search, setError) {
   $.LoadingOverlay('show')
   try {
-    const accountsResponse = await fetch('/.netlify/functions/get-accounts', {
-      body: JSON.stringify(params),
-      method: 'POST'
+    const allAccounts = await scanAccountsWithPagination(params, { 
+      Limit: 1000,
+      ProjectionExpression: 'discord, address'
     })
-    handleError(accountsResponse)
-
-    const accountsJson = (await accountsResponse.json()).map((x) => ({
+    
+    const accountsJson = (await allAccounts.json()).map((x) => ({
       ...x,
       address: performAddressReplacement(x.address)
     }))

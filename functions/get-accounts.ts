@@ -1,4 +1,5 @@
 import AWS from 'aws-sdk'
+import util from 'util'
 import {
   HandlerEvent,
   HandlerContext,
@@ -12,23 +13,13 @@ AWS.config.update({
 })
 
 const docClient = new AWS.DynamoDB.DocumentClient()
+const scan = util.promisify(docClient.scan).bind(docClient)
 
-const scanTable = async (params) => {
-  const scanResults: any[] = []
-  let items
-  do {
-    items = await docClient.scan(params).promise()
-    items.Items.forEach((item) => scanResults.push(item))
-    params.ExclusiveStartKey = items.LastEvaluatedKey
-  } while (typeof items.LastEvaluatedKey !== 'undefined')
-
-  return scanResults
-}
-
-async function handle() {
+async function handle(scanConfig) {
   try {
-    const result = await scanTable({
-      TableName: 'accounts'
+    const result = await scan({
+      TableName: 'accounts',
+      ...scanConfig
     })
     return result
   } catch (e) {
@@ -49,7 +40,7 @@ export const handler = (
     })
   }
 
-  handle()
+  handle(json.scanConfig)
     .then((response) => {
       return callback(null, {
         statusCode: 200,
