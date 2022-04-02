@@ -235,48 +235,51 @@ function App() {
         </div>
         <button
           id="click"
-          onClick=${() =>
-            preloadBatch(
-              {
-                password: $('#password').val(),
-                data: {
-                  batch: $('#batch').val()
-                }
-              },
-              setError
-            )}
+          onClick=${() => alert('Disabled for safety')
+            // preloadBatch(
+            //   {
+            //     password: $('#password').val(),
+            //     data: {
+            //       batch: $('#batch').val()
+            //     }
+            //   },
+            //   setError
+            // )
+          }
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
           Preload Batch</button
         ><br /><br />
         <button
           id="click"
-          onClick=${() =>
-            activateBatch(
-              {
-                password: $('#password').val(),
-                data: {
-                  batch: $('#batch').val()
-                }
-              },
-              setError
-            )}
+          onClick=${() => alert('Disabled for safety')
+            // activateBatch(
+            //   {
+            //     password: $('#password').val(),
+            //     data: {
+            //       batch: $('#batch').val()
+            //     }
+            //   },
+            //   setError
+            // )
+          }
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
           Randomize and Activate Batch</button
         ><br /><br />
         <button
           id="click"
-          onClick=${() =>
-            overrideActiveBatch(
-              {
-                password: $('#password').val(),
-                data: {
-                  batch: $('#batch').val()
-                }
-              },
-              setError
-            )}
+          onClick=${() => alert('Disabled for safety')
+            // overrideActiveBatch(
+            //   {
+            //     password: $('#password').val(),
+            //     data: {
+            //       batch: $('#batch').val()
+            //     }
+            //   },
+            //   setError
+            // )
+          }
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
           Override Active Batch</button
