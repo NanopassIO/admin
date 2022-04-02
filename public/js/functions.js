@@ -35,6 +35,49 @@ function handleError(response, setError) {
   }
 }
 
+const scanAccountsWithPagination = async (params, setError, attributes = '') => {
+  let LastEvaluatedKey = undefined;
+  let scanResult = await fetch('/.netlify/functions/get-accounts', {
+    body: JSON.stringify({
+      ...params,
+      data: {
+        attributes: attributes
+      }
+    }),
+    method: 'POST'
+  })
+
+  handleError(scanResult, setError)
+  
+  const scanResultJson = await scanResult.json()
+
+  let combined = scanResultJson.Items
+  LastEvaluatedKey = scanResultJson.LastEvaluatedKey
+  
+  while(LastEvaluatedKey) {
+    const nextPage = await fetch('/.netlify/functions/get-accounts', {
+      body: JSON.stringify({
+        ...params,
+        data: {
+          attributes: attributes,
+          ExclusiveStartKey: LastEvaluatedKey
+        }
+      }),
+      method: 'POST'
+    })
+
+    handleError(nextPage, setError)
+    const nextPageJson = await nextPage.json()
+    
+    if(nextPageJson.Count === 0) break
+
+    combined = [...combined, ...nextPageJson.Items];
+    LastEvaluatedKey = nextPageJson.LastEvaluatedKey
+  }
+
+  return combined;
+}
+
 async function fetchResponse(url, params, setError) {
   $.LoadingOverlay('show')
   try {
@@ -252,15 +295,9 @@ export async function getPrizeList(params, setError) {
 export async function getAccounts(params, setError) {
   $.LoadingOverlay('show')
   try {
-    const response = await fetch('/.netlify/functions/get-accounts', {
-      body: JSON.stringify(params),
-      method: 'POST'
-    })
+    const combined = await scanAccountsWithPagination(params, setError)
 
-    handleError(response, setError)
-    
-    const json = await response.json()
-    const converted = json.map((x) => ({
+    const converted = combined.map((x) => ({
       ...x,
       address: performAddressReplacement(x.address),
       inventory: JSON.parse(x.inventory ? x.inventory : '[]')
@@ -269,7 +306,7 @@ export async function getAccounts(params, setError) {
     }))
 
     const ws = XLSX.utils.json_to_sheet(converted, {
-      header: ['address', 'discord', 'fragments', 'inventory']
+      header: ['address', 'badLuckCount', 'discord', 'discordDevId', 'fragments', 'inventory']
     })
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Accounts')
@@ -296,65 +333,51 @@ export async function getPurchases(params, setError) {
         .join(' | ')
     }
 
-    const getSingleAddressDiscord = async (x) => {
-      try {
-        const response = await fetch('/.netlify/functions/get-account', {
-          body: JSON.stringify({
-            data: { address: x.address },
-            password: params.password
-          }),
-          method: 'POST'
-        })
-        handleError(response, setError)
-        
-        const json = await response.json()
+    const allAccounts = await scanAccountsWithPagination(params, setError, 'address, discord, discordDevId')
+    const accountsJson = allAccounts.map((x) => ({
+      ...x,
+      address: performAddressReplacement(x.address)
+    }))
 
-        return {
-          ...x,
-          address: performAddressReplacement(x.address),
-          itemData: objToStr(JSON.parse(x.itemData)),
-          itemName: x.itemName,
-          discord: json.Items[0].discord ?? '',
-          discordDeveloperID: json.Items[0].discordDevId ?? ''
-        }
-      } catch (e) {
-        throw e
-      }
+    const accountByAddress = (addr) => {
+      return accountsJson.find((a) => {
+        return a.address === addr
+      })
     }
 
     const json = await response.json()
     const converted = json.map((x) => {
-      return getSingleAddressDiscord(x)
+      const acc = accountByAddress(x.address)
+      return {
+        ...x,
+        address: performAddressReplacement(x.address),
+        itemData: objToStr(JSON.parse(x.itemData)),
+        itemName: x.itemName,
+        discord: acc.discord ?? '',
+        discordDeveloperID: acc.discordDevId ?? ''
+      }
     })
 
-    Promise.all(converted)
-      .then((result) => {
-        const ws = XLSX.utils.json_to_sheet(result, {
-          header: [
-            'address',
-            'itemData',
-            'itemName',
-            'discord',
-            'discordDeveloperID'
-          ]
-        })
-        const wb = XLSX.utils.book_new()
-        XLSX.utils.book_append_sheet(
-          wb,
-          ws,
-          params.data ? `${params.data.name} Purchases` : 'Purchases'
-        )
-        XLSX.writeFile(
-          wb,
-          params.data ? `${params.data.name} Purchases.xlsx` : 'Purchases.xlsx'
-        )
-        $.LoadingOverlay('hide')
-      })
-      .catch((err) => {
-        console.log(err)
-        $.LoadingOverlay('hide')
-        throw err
-      })
+    const ws = XLSX.utils.json_to_sheet(converted, {
+      header: [
+        'address',
+        'itemData',
+        'itemName',
+        'discord',
+        'discordDeveloperID'
+      ]
+    })
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(
+      wb,
+      ws,
+      params.data ? `${params.data.name} Purchases` : 'Purchases'
+    )
+    XLSX.writeFile(
+      wb,
+      params.data ? `${params.data.name} Purchases.xlsx` : 'Purchases.xlsx'
+    )
+    $.LoadingOverlay('hide')
   } catch (e) {
     $.LoadingOverlay('hide')
     setError(e.message)
@@ -364,13 +387,9 @@ export async function getPurchases(params, setError) {
 export async function winners(params, search, setError) {
   $.LoadingOverlay('show')
   try {
-    const accountsResponse = await fetch('/.netlify/functions/get-accounts', {
-      body: JSON.stringify(params),
-      method: 'POST'
-    })
-    handleError(accountsResponse, setError)
-
-    const accountsJson = (await accountsResponse.json()).map((x) => ({
+    const allAccounts = await scanAccountsWithPagination(params, setError, 'discord, address')
+    
+    const accountsJson = allAccounts.map((x) => ({
       ...x,
       address: performAddressReplacement(x.address)
     }))
