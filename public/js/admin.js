@@ -50,7 +50,7 @@ function App() {
   const [marketplaceItems, setMarketplaceItems] = useState([])
 
   const handleGetMarketplaceItems = async () => {
-    const results = await getMarketplaceItems()
+    const results = await getMarketplaceItems(setError)
     setMarketplaceItems(results)
   }
 
