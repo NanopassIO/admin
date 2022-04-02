@@ -76,8 +76,6 @@ const scanAccountsWithPagination = async (params, attributes = '') => {
   return combined;
 }
 
-const MAX_CONCURRENCY = 200
-
 async function fetchResponse(url, params, setError) {
   $.LoadingOverlay('show')
   try {
@@ -85,9 +83,7 @@ async function fetchResponse(url, params, setError) {
       body: JSON.stringify(params),
       method: 'POST'
     })
-    // if (!response.ok) {
-    //   throw new Error('An error occurred')
-    // }
+  
     handleError(response)
   } catch (e) {
     setError(e.message)
