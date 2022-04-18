@@ -12,7 +12,7 @@ const ADDRESS_MAPPING = {
   '0xcdA2E4b965eCa883415107b624e971c4Cefc4D8C':
     '0xEfEE7fD9aF43945E7b7D9655592600A6a63eFf0D'
 }
-function handleError(response) {
+function handleError(response, setError) {
   if (!response.ok) {
     switch (response.status) {
       case 400:
@@ -30,10 +30,12 @@ function handleError(response) {
         throw new Error('Something went wrong.')
     }
     
+  }else{
+    setError('')
   }
 }
 
-const scanAccountsWithPagination = async (params, attributes = '') => {
+const scanAccountsWithPagination = async (params, setError, attributes = '') => {
   let LastEvaluatedKey = undefined;
   let scanResult = await fetch('/.netlify/functions/get-accounts', {
     body: JSON.stringify({
@@ -45,7 +47,7 @@ const scanAccountsWithPagination = async (params, attributes = '') => {
     method: 'POST'
   })
 
-  handleError(scanResult)
+  handleError(scanResult, setError)
   
   const scanResultJson = await scanResult.json()
 
@@ -64,7 +66,7 @@ const scanAccountsWithPagination = async (params, attributes = '') => {
       method: 'POST'
     })
 
-    handleError(nextPage)
+    handleError(nextPage, setError)
     const nextPageJson = await nextPage.json()
     
     if(nextPageJson.Count === 0) break
@@ -83,8 +85,10 @@ async function fetchResponse(url, params, setError) {
       body: JSON.stringify(params),
       method: 'POST'
     })
-  
-    handleError(response)
+    // if (!response.ok) {
+    //   throw new Error('An error occurred')
+    // }
+    handleError(response, setError)
   } catch (e) {
     setError(e.message)
   } finally {
@@ -136,13 +140,13 @@ export async function addMarketplaceItem(params, setError) {
   await fetchResponse('/.netlify/functions/add-marketplace', params, setError)
 }
 
-export async function getMarketplaceItems() {
+export async function getMarketplaceItems(setError) {
   $.LoadingOverlay('show')
   try {
     const response = await fetch('/.netlify/functions/get-marketplace', {
       method: 'POST'
     })
-    handleError(response)
+    handleError(response, setError)
     return await response.json()
   } catch (e) {
     console.log(e.message)
@@ -161,7 +165,7 @@ export async function getActiveBatch(setError) {
     const response = await fetch('/.netlify/functions/get-active-batch', {
       method: 'POST'
     })
-    handleError(response)
+    handleError(response, setError)
 
     return await response.json()
   } catch (e) {
@@ -183,7 +187,7 @@ export async function getBatch(params, setError) {
       method: 'POST'
     })
 
-    handleError(response)
+    handleError(response, setError)
   
     const json = await response.json()
     const converted = json.Items.map((x) => ({
@@ -213,7 +217,7 @@ export async function getAddressLogs(params, setError) {
       body: JSON.stringify(params),
       method: 'POST'
     })
-    handleError(response)
+    handleError(response, setError)
 
     const getInvItemNames = (inv) => {
       return JSON.parse(inv).map((i) => i.name)
@@ -274,7 +278,7 @@ export async function getPrizeList(params, setError) {
       method: 'POST'
     })
 
-    handleError(response)
+    handleError(response, setError)
 
     const json = await response.json()
     const ws = XLSX.utils.json_to_sheet(json.Items)
@@ -291,7 +295,7 @@ export async function getPrizeList(params, setError) {
 export async function getAccounts(params, setError) {
   $.LoadingOverlay('show')
   try {
-    const combined = await scanAccountsWithPagination(params)
+    const combined = await scanAccountsWithPagination(params, setError)
 
     const converted = combined.map((x) => ({
       ...x,
@@ -321,7 +325,7 @@ export async function getPurchases(params, setError) {
       body: JSON.stringify(params),
       method: 'POST'
     })
-    handleError(response)
+    handleError(response, setError)
 
     const objToStr = (obj) => {
       return Object.keys(obj)
@@ -329,7 +333,7 @@ export async function getPurchases(params, setError) {
         .join(' | ')
     }
 
-    const allAccounts = await scanAccountsWithPagination(params, 'address, discord, discordDevId')
+    const allAccounts = await scanAccountsWithPagination(params, setError, 'address, discord, discordDevId')
     const accountsJson = allAccounts.map((x) => ({
       ...x,
       address: performAddressReplacement(x.address)
@@ -383,7 +387,7 @@ export async function getPurchases(params, setError) {
 export async function winners(params, search, setError) {
   $.LoadingOverlay('show')
   try {
-    const allAccounts = await scanAccountsWithPagination(params, 'discord, address')
+    const allAccounts = await scanAccountsWithPagination(params, setError, 'discord, address')
     
     const accountsJson = allAccounts.map((x) => ({
       ...x,
@@ -394,7 +398,7 @@ export async function winners(params, search, setError) {
       body: JSON.stringify(params),
       method: 'POST'
     })
-    handleError(batchResponse)
+    handleError(batchResponse, setError)
 
     const batchJson = (await batchResponse.json()).Items.map((x) => ({
       ...x,
