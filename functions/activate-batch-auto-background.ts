@@ -2,6 +2,7 @@ import { DynamoDB } from '../src/db'
 import { createContract, takeSnapshot } from '../src/eth'
 import { getEmptyAccount } from '../src/account'
 import crypto from 'crypto'
+import { schedule } from '@netlify/functions'
 
 const MAX_CONCURRENCY = 200
 
@@ -168,7 +169,7 @@ export async function handle(_?: any, db?: DynamoDB, contract?: any) {
   })
 }
 
-export const handler = async (event) => {
+const handlerFn = async (event) => {
   const json = JSON.parse(event.body)
   if (json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
@@ -185,3 +186,8 @@ export const handler = async (event) => {
     return { statusCode: 500, body: JSON.stringify(error) }
   }
 }
+
+export const handler = schedule(
+  process.env.REGION === 'us-east-1' ? '55 3 * * *' : '55 3 * * 1',
+  handlerFn
+)

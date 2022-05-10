@@ -11,15 +11,3 @@
   # to deploy. This is relative to the base directory if one has been set, 
   # or the root directory if a base hasn’t been set.
   directory = "functions/"
-
-[functions."test-preload-batch-auto-background"]
-schedule = "55 15 * * *"
-
-[functions."test-activate-batch-auto-background"]
-schedule = "55 3 * * *"
-
-[functions."preload-batch-auto-background"]
-schedule = "55 15 * * 1"
-
-[functions."activate-batch-auto-background"]
-schedule = "55 3 * * 1"
