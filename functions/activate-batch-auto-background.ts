@@ -165,7 +165,8 @@ export async function handle(_?: any, db?: DynamoDB, contract?: any) {
   // Set batch as active
   await db.put('settings', {
     active: 'active',
-    batch: batch
+    batch: batch,
+    lastActivateTimestamp: Date.now()
   })
 }
 
