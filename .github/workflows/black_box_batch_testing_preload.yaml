@@ -1,6 +1,8 @@
 name: Black Box Batch Testing Preload
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '55 15 * * *'
 jobs:
   batch:
     runs-on: ubuntu-latest
