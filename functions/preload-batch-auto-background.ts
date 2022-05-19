@@ -1,4 +1,3 @@
-import { schedule } from '@netlify/functions'
 import { DynamoDB } from '../src/db'
 import { createContract, takeSnapshot } from '../src/eth'
 
@@ -8,17 +7,21 @@ async function getNextBatch(db: DynamoDB) {
   const settingsItems = await db.scan('settings', 1)
   const settings = settingsItems.Items[0]
   const batch = settings.batch
+  const lastActivateTimestamp = settings.lastActivateTimestamp
 
-  return batch
-    .split('-')
-    .map((b) => {
-      if (b === 'batch') {
-        return b
-      }
+  return {
+    batch: batch
+      .split('-')
+      .map((b) => {
+        if (b === 'batch') {
+          return b
+        }
 
-      return `${parseInt(b) + 1}`
-    })
-    .join('-')
+        return `${parseInt(b) + 1}`
+      })
+      .join('-'),
+    lastActivateTimestamp
+  }
 }
 
 export async function handle(_?: any, db?: DynamoDB, contract?: any) {
@@ -30,7 +33,14 @@ export async function handle(_?: any, db?: DynamoDB, contract?: any) {
     })
   }
 
-  const batch = await getNextBatch(db)
+  const { batch, lastActivateTimestamp } = await getNextBatch(db)
+
+  // 1 week for prod. 1 day for testing
+  const scheduleTimestamp =
+    process.env.REGION === 'us-east-2' ? 604800000 : 86400000
+
+  if (Date.now() - lastActivateTimestamp < scheduleTimestamp) return
+
   console.log(`Pre-loading Batch: ${batch}`)
 
   if (!contract) {
@@ -62,7 +72,7 @@ export async function handle(_?: any, db?: DynamoDB, contract?: any) {
   }
 }
 
-const handlerFn = async (event) => {
+export const handler = async (event) => {
   const json = JSON.parse(event.body)
   if (json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
@@ -79,8 +89,3 @@ const handlerFn = async (event) => {
     return { statusCode: 500, body: JSON.stringify(error) }
   }
 }
-
-export const handler = schedule(
-  process.env.REGION === 'us-east-1' ? '55 15 * * *' : '55 15 * * 1',
-  handlerFn
-)
