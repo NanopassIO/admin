@@ -93,6 +93,8 @@ export async function handle(_?: any, db?: DynamoDB, contract?: any) {
 
   console.log(`Activating Batch: ${batch}`)
 
+  return;
+
   const result = await db.query('batches', 'batch', batch)
   const existingAddresses = result.Items
 
