@@ -1,6 +1,8 @@
 name: Black Box Batch Activate
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '*/10 * * * *'
 jobs:
   batch:
     runs-on: ubuntu-latest
