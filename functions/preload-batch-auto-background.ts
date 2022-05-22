@@ -62,7 +62,7 @@ export async function handle(_?: any, db?: DynamoDB, contract?: any) {
   }
 }
 
-const handlerFn = async (event) => {
+export const handler = async (event) => {
   const json = JSON.parse(event.body)
   if (json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
@@ -79,8 +79,3 @@ const handlerFn = async (event) => {
     return { statusCode: 500, body: JSON.stringify(error) }
   }
 }
-
-export const handler = schedule(
-  process.env.REGION === 'us-east-1' ? '55 15 * * *' : '55 15 * * 1',
-  handlerFn
-)

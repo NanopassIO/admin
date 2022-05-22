@@ -85,16 +85,6 @@ export async function handle(_?: any, db?: DynamoDB, contract?: any) {
 
   const { batch, lastActivateTimestamp } = await getNextBatch(db)
 
-  // 1 week for prod. 1 day for testing
-  const scheduleTimestamp =
-    process.env.REGION === 'us-east-2' ? 604800000 : 86400000
-
-  if (Date.now() - lastActivateTimestamp < scheduleTimestamp) return
-
-  console.log(`Activating Batch: ${batch}`)
-
-  return;
-
   const result = await db.query('batches', 'batch', batch)
   const existingAddresses = result.Items
 

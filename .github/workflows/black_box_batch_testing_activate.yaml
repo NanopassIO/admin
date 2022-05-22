@@ -1,8 +1,6 @@
 name: Black Box Batch Testing Activate
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '*/10 * * * *'
 jobs:
   batch:
     runs-on: ubuntu-latest
