@@ -1,0 +1,24 @@
+name: Lambda Upload
+on:
+  release:
+    types: [published]
+jobs:
+  lambda-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - name: npm install
+        run: npm ci
+      - name: deploy
+        run: |
+          npx ncc build functions/activate-batch-auto-background.ts
+          zip -j deploy.zip ./dist/*
+          aws lambda update-function-code --function-name=test-blackbox --zip-file=fileb://deploy.zip
+        env:
+          ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
+          SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
+          INFURA_API_KEY: ${{ secrets.TESTING_INFURA_API_KEY }}
+          REGION: ${{ secrets.REGION_TESTING }}
