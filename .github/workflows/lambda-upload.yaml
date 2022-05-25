@@ -15,7 +15,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.REGION_TESTING }}
+          aws-region: us-east-1
       - name: npm install
         run: npm ci
       - name: deploy
@@ -27,4 +27,4 @@ jobs:
           ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
           SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
           INFURA_API_KEY: ${{ secrets.TESTING_INFURA_API_KEY }}
-          REGION: ${{ secrets.REGION_TESTING }}
+          REGION: us-east-1
