@@ -25,21 +25,17 @@ async function getNextBatch(db: DynamoDB) {
   const settingsItems = await db.scan('settings', 1)
   const settings = settingsItems.Items[0]
   const batch = settings.batch
-  const lastActivateTimestamp = settings.lastActivateTimestamp
 
-  return {
-    batch: batch
-      .split('-')
-      .map((b) => {
-        if (b === 'batch') {
-          return b
-        }
+  return batch
+    .split('-')
+    .map((b) => {
+      if (b === 'batch') {
+        return b
+      }
 
-        return `${parseInt(b) + 1}`
-      })
-      .join('-'),
-    lastActivateTimestamp
-  }
+      return `${parseInt(b) + 1}`
+    })
+    .join('-')
 }
 
 function assignPrizes(flatAddresses, prizes, holderBalance) {
@@ -83,7 +79,8 @@ export async function handle(_?: any, db?: DynamoDB, contract?: any) {
     contract = createContract()
   }
 
-  const { batch, lastActivateTimestamp } = await getNextBatch(db)
+  const batch = await getNextBatch(db)
+  console.log('BATCH', batch)
 
   const result = await db.query('batches', 'batch', batch)
   const existingAddresses = result.Items
@@ -172,17 +169,17 @@ export async function handle(_?: any, db?: DynamoDB, contract?: any) {
   })
 }
 
-export const handler = async (event) => {
-  const json = JSON.parse(event.body)
-  if (json.password !== process.env.PASSWORD) {
-    console.log('Unauthorized access')
-    return {
-      statusCode: 401
-    }
-  }
+export const handler = async () => {
+  // const json = JSON.parse(event.body)
+  // if (json.password !== process.env.PASSWORD) {
+  //   console.log('Unauthorized access')
+  //   return {
+  //     statusCode: 401
+  //   }
+  // }
 
   try {
-    const response = await handle(json.data)
+    const response = await handle()
     return { statusCode: 200, body: JSON.stringify(response) }
   } catch (error) {
     console.log(error)
