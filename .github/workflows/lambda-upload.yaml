@@ -10,12 +10,6 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '16'
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.REGION_TESTING }}
       - name: npm install
         run: npm ci
       - name: deploy
@@ -23,8 +17,3 @@ jobs:
           npx ncc build functions/activate-batch-auto-background.ts
           zip -j deploy.zip ./dist/*
           aws lambda update-function-code --function-name=test-blackbox --zip-file=fileb://deploy.zip
-        env:
-          ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
-          SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
-          INFURA_API_KEY: ${{ secrets.TESTING_INFURA_API_KEY }}
-          REGION: ${{ secrets.REGION_TESTING }}
