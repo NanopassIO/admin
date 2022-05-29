@@ -157,6 +157,15 @@ export async function handle(_?: any, db?: DynamoDB, contract?: any) {
           account.badLuckCount += balance
         }
 
+        // Enforce a cap to badLuckCount before it's committed back to
+        // the database.
+        const BAD_LUCK_COUNT_CAP = 26;
+        let finalBadLuckCount = account.badLuckCount;
+        if (finalBadLuckCount > BAD_LUCK_COUNT_CAP) {
+          finalBadLuckCount = BAD_LUCK_COUNT_CAP;
+        }
+        account.badLuckCount = finalBadLuckCount;
+
         await db?.put('batches', batchItem)
         await db?.put('accounts', account)
       })
