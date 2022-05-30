@@ -4,6 +4,7 @@ import { getEmptyAccount } from '../src/account'
 import crypto from 'crypto'
 
 const MAX_CONCURRENCY = 200
+const BAD_LUCK_COUNT_CAP = 26;
 
 async function fetchPrizes(db: DynamoDB, batch: string) {
   // Fetch list of prizes
@@ -159,12 +160,13 @@ export async function handle(_?: any, db?: DynamoDB, contract?: any) {
 
         // Enforce a cap to badLuckCount before it's committed back to
         // the database.
-        const BAD_LUCK_COUNT_CAP = 26;
-        let finalBadLuckCount = account.badLuckCount;
-        if (finalBadLuckCount > BAD_LUCK_COUNT_CAP) {
-          finalBadLuckCount = BAD_LUCK_COUNT_CAP;
+        // let finalBadLuckCount = account.badLuckCount;
+        // if (finalBadLuckCount > BAD_LUCK_COUNT_CAP) {
+        //   finalBadLuckCount = BAD_LUCK_COUNT_CAP;
+        // }
+        if (account.badLuckCount > BAD_LUCK_COUNT_CAP ){
+          account.badLuckCount = BAD_LUCK_COUNT_CAP;
         }
-        account.badLuckCount = finalBadLuckCount;
 
         await db?.put('batches', batchItem)
         await db?.put('accounts', account)
