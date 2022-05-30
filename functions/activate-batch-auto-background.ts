@@ -160,10 +160,6 @@ export async function handle(_?: any, db?: DynamoDB, contract?: any) {
 
         // Enforce a cap to badLuckCount before it's committed back to
         // the database.
-        // let finalBadLuckCount = account.badLuckCount;
-        // if (finalBadLuckCount > BAD_LUCK_COUNT_CAP) {
-        //   finalBadLuckCount = BAD_LUCK_COUNT_CAP;
-        // }
         if (account.badLuckCount > BAD_LUCK_COUNT_CAP ){
           account.badLuckCount = BAD_LUCK_COUNT_CAP;
         }
