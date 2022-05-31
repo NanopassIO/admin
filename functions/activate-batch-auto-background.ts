@@ -2,7 +2,6 @@ import { DynamoDB } from '../src/db'
 import { createContract, takeSnapshot } from '../src/eth'
 import { getEmptyAccount } from '../src/account'
 import crypto from 'crypto'
-import { schedule } from '@netlify/functions'
 
 const MAX_CONCURRENCY = 200
 
@@ -81,7 +80,7 @@ export async function handle(_?: any, db?: DynamoDB, contract?: any) {
   }
 
   const batch = await getNextBatch(db)
-  console.log(`Activating Batch: ${batch}`)
+  console.log('BATCH', batch)
 
   const result = await db.query('batches', 'batch', batch)
   const existingAddresses = result.Items
@@ -165,11 +164,12 @@ export async function handle(_?: any, db?: DynamoDB, contract?: any) {
   // Set batch as active
   await db.put('settings', {
     active: 'active',
-    batch: batch
+    batch: batch,
+    lastActivateTimestamp: Date.now()
   })
 }
 
-const handlerFn = async (event) => {
+export const handler = async (event) => {
   const json = JSON.parse(event.body)
   if (json.password !== process.env.PASSWORD) {
     console.log('Unauthorized access')
@@ -187,7 +187,12 @@ const handlerFn = async (event) => {
   }
 }
 
-export const handler = schedule(
-  process.env.REGION === 'us-east-1' ? '55 3 * * *' : '55 3 * * 1',
-  handlerFn
-)
+export const lambda = async () => {
+  try {
+    const response = await handle()
+    return { statusCode: 200, body: JSON.stringify(response) }
+  } catch (error) {
+    console.log(error)
+    return { statusCode: 500, body: JSON.stringify(error) }
+  }
+}

@@ -1,0 +1,20 @@
+name: Black Box Batch Preload
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '55 15 * * 1'
+jobs:
+  batch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install modules
+        run: npm ci
+      - name: Preload Next Batch
+        run: |
+          npm run preload
+        env:
+          ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
+          SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
+          INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}
+          REGION: ${{ secrets.REGION_MAIN }}
