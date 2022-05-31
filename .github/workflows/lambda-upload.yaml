@@ -13,7 +13,4 @@ jobs:
       - name: npm install
         run: npm ci
       - name: deploy
-        run: |
-          npx ncc build functions/activate-batch-auto-background.ts
-          zip -j deploy.zip ./dist/*
-          aws lambda update-function-code --function-name=test-blackbox --zip-file=fileb://deploy.zip
+        run: npm run build
