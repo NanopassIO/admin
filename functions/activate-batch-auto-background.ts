@@ -169,15 +169,25 @@ export async function handle(_?: any, db?: DynamoDB, contract?: any) {
   })
 }
 
-export const handler = async () => {
-  // const json = JSON.parse(event.body)
-  // if (json.password !== process.env.PASSWORD) {
-  //   console.log('Unauthorized access')
-  //   return {
-  //     statusCode: 401
-  //   }
-  // }
+export const handler = async (event) => {
+  const json = JSON.parse(event.body)
+  if (json.password !== process.env.PASSWORD) {
+    console.log('Unauthorized access')
+    return {
+      statusCode: 401
+    }
+  }
 
+  try {
+    const response = await handle(json.data)
+    return { statusCode: 200, body: JSON.stringify(response) }
+  } catch (error) {
+    console.log(error)
+    return { statusCode: 500, body: JSON.stringify(error) }
+  }
+}
+
+export const lambda = async () => {
   try {
     const response = await handle()
     return { statusCode: 200, body: JSON.stringify(response) }
