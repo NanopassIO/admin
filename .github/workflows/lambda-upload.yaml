@@ -1,0 +1,20 @@
+name: Lambda Upload
+on:
+  release:
+    types: [published]
+jobs:
+  lambda-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - name: npm install
+        run: npm ci
+      - name: deploy
+        run: npm run build
+      - name: Attach zip to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: deploy.zip

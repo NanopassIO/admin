@@ -1,4 +1,3 @@
-import { schedule } from '@netlify/functions'
 import { DynamoDB } from '../src/db'
 import { createContract, takeSnapshot } from '../src/eth'
 
