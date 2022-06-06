@@ -7,7 +7,7 @@
     "lint": "npx eslint --fix .",
     "activate": "ts-node -e \"import { handle } from './functions/activate-batch-auto-background'; handle()\"",
     "preload": "ts-node -e \"import { handle } from './functions/preload-batch-auto-background'; handle()\"",
-    "build": "npx ncc build functions/activate-batch-auto-background.ts && zip -j deploy.zip ./dist/* && aws lambda update-function-code --function-name=test-blackbox --zip-file=fileb://deploy.zip"
+    "build": "npx ncc build functions/activate-batch-auto-background.ts && zip -j deploy.zip ./dist/*"
   },
   "author": "",
   "license": "ISC",

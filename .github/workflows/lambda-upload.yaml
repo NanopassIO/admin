@@ -14,3 +14,7 @@ jobs:
         run: npm ci
       - name: deploy
         run: npm run build
+      - name: Attach zip to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: Deploy.zip
