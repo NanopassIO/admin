@@ -15,6 +15,7 @@ jobs:
       - name: deploy
         run: npm run build
       - name: Attach zip to release
-        uses: softprops/action-gh-release@v1
+        uses: svenstaro/upload-release-action@v2
         with:
-          files: Deploy.zip
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: Deploy.zip
