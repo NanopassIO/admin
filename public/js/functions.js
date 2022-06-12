@@ -367,15 +367,16 @@ export async function getPurchases(params, setError) {
         'discordDeveloperID'
       ]
     })
+    const cleanName = params.data.name.replace('/','-')
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(
       wb,
       ws,
-      params.data ? `${params.data.name} Purchases` : 'Purchases'
+      params.data ? `${cleanName} Purchases` : 'Purchases'
     )
     XLSX.writeFile(
       wb,
-      params.data ? `${params.data.name} Purchases.xlsx` : 'Purchases.xlsx'
+      params.data ? `${cleanName} Purchases.xlsx` : 'Purchases.xlsx'
     )
     $.LoadingOverlay('hide')
   } catch (e) {
