@@ -17,6 +17,7 @@ const docClient = new AWS.DynamoDB.DocumentClient()
 const scan = util.promisify(docClient.scan).bind(docClient)
 const query = util.promisify(docClient.query).bind(docClient)
 const update = util.promisify(docClient.update).bind(docClient)
+const put = util.promisify(docClient.put).bind(docClient)
 
 const calculateWinner = async (bidsObj) => {
   let winnerBidComparisonNum = 9999
@@ -57,6 +58,7 @@ async function handle(data) {
     })
 
     let verifiedWinner
+    let verifiedWinnerAcc
 
     do {
       const winner = await calculateWinner(bidsObj)
@@ -76,15 +78,12 @@ async function handle(data) {
         )
       } else {
         verifiedWinner = winner
+        verifiedWinnerAcc = winnerAcc
       }
     } while (!verifiedWinner)
 
-    const winningBidInFragsCost = Math.floor(verifiedWinner.bid / 10)
-
     for (let i = 0; i < result.Items.length; i++) {
       try {
-        const currPlayerBid = Math.floor(result.Items[i].bid / 10)
-
         // not handling case where player does not have enough frags
         await update({
           TableName: 'accounts',
@@ -95,9 +94,9 @@ async function handle(data) {
           ConditionExpression: 'fragments >= :val',
           ExpressionAttributeValues: {
             ':val':
-              currPlayerBid < winningBidInFragsCost
-                ? currPlayerBid
-                : winningBidInFragsCost
+              result.Items[i].bid < verifiedWinner.bid
+                ? result.Items[i].bid
+                : verifiedWinner.bid
           }
         })
       } catch (e) {
@@ -105,18 +104,31 @@ async function handle(data) {
       }
     }
 
-    // update game winner
-    await update({
-      TableName: 'gameprize',
-      Key: {
-        name: data.name
-      },
-      UpdateExpression:
-        'set winnerAddress = :winnerAddress, winnerBid = :winnerBid',
-      ExpressionAttributeValues: {
-        ':winnerAddress': verifiedWinner.address,
-        ':winnerBid': verifiedWinner.bid
-      }
+    // update game winner & get game prize
+    const gamePrize = (
+      await update({
+        TableName: 'gameprize',
+        Key: {
+          name: data.name
+        },
+        UpdateExpression:
+          'set winnerAddress = :winnerAddress, winnerBid = :winnerBid',
+        ExpressionAttributeValues: {
+          ':winnerAddress': verifiedWinner.address,
+          ':winnerBid': verifiedWinner.bid
+        },
+        ReturnValues: 'ALL_NEW'
+      })
+    ).Attributes
+
+    // update winner's inventory with game prize
+    const inventory = JSON.parse(verifiedWinnerAcc.inventory)
+    inventory.push(gamePrize)
+    verifiedWinnerAcc.inventory = JSON.stringify(inventory)
+
+    await put({
+      TableName: 'accounts',
+      Item: verifiedWinnerAcc
     })
 
     return verifiedWinner

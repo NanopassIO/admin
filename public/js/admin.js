@@ -509,11 +509,16 @@ function App() {
           <br />
           <button
             id="click"
-            onClick=${() => {
+            onClick=${async () => {
               const startDate = new Date($('#startDate').val())
               const endDate = new Date($('#endDate').val())
 
-              addGamePrize(
+              if (!startDate || !endDate) {
+                alert('Please remember to input start and end date/time')
+                return
+              }
+
+              await addGamePrize(
                 {
                   password: $('#password').val(),
                   data: {
@@ -526,26 +531,11 @@ function App() {
                 },
                 setError
               )
+              handleGetGamePrizes()
             }}
             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           >
             Add Game Prize</button
-          ><br /><br />
-          <button
-            id="click"
-            onClick=${() =>
-              deletePrize(
-                {
-                  password: $('#password').val(),
-                  data: {
-                    name: $('#prizeName').val()
-                  }
-                },
-                setError
-              )}
-            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Delete Game Prize</button
           ><br /><br />
         </div>
         <div style="width: 100%;">
