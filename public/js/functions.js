@@ -30,9 +30,11 @@ function handleError(response, setError) {
         throw new Error('Something went wrong.')
     }
     
-  }else{
-    setError('')
+    return true
   }
+
+  setError('')
+  return false
 }
 
 const scanAccountsWithPagination = async (params, setError, attributes = '') => {
@@ -153,6 +155,34 @@ export async function getMarketplaceItems(setError) {
   } finally {
     $.LoadingOverlay('hide')
   }
+}
+
+export async function massRefund(params, setError) {
+  $.LoadingOverlay('show')
+  try {
+    const addresses = params.data.address.split('\n').filter(x => x.length > 1)
+    for(const address of addresses) {
+      const response = await fetch('/.netlify/functions/give-fragments', {
+        body: JSON.stringify({
+          password: params.password,
+          data: {
+            address: address.trim(),
+            amount: params.data.amount
+          }
+        }),
+        method: 'POST'
+      })
+  
+      if(!handleError(response, setError)) {
+        console.log(`Refunded ${address} with ${params.data.amount} fragments`)
+      }
+    }
+  } catch (e) {
+    setError(e.message)
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+
 }
 
 export async function giveFragments(params, setError) {

@@ -20,7 +20,8 @@ import {
   giveBalance,
   addMarketplaceItem,
   getMarketplaceItems,
-  getAddressLogs
+  getAddressLogs,
+  massRefund
 } from './functions.js'
 import { tabFunction, openDefaultTab } from './tabs.js'
 
@@ -698,6 +699,33 @@ function App() {
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
           Give Balance (Testing Only)</button
+        ><br /><br />
+        <div class="input-group">
+          <label for="massAddresses">Mass Refund:</label>
+          <textarea
+            type="massAddresses"
+            id="massAddresses"
+            name="massAddresses"
+            class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          />
+        </div>
+        <br />
+        <button
+          id="click"
+          onClick=${() =>
+            massRefund(
+              {
+                password: $('#password').val(),
+                data: {
+                  address: $('#massAddresses').val(),
+                  amount: $('#fragmentAmount').val()
+                }
+              },
+              setError
+            )}
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+        Mass Refund</button
         ><br /><br />
       </div>
     </div>
