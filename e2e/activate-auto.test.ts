@@ -117,3 +117,67 @@ it('can handle existing address with no badLuckCount', async () => {
   expect(await countBoxes(db, 'batch-1')).toStrictEqual(4000)
   await checkBadLuckCount(db, 'batch-1')
 })
+
+it('ensure badluck count is following cap of 26', async ()=>{
+  await db.put('settings', { active: 'active', batch: 'batch-0' })
+  await preload(undefined, db, contract)
+
+  expect(await countBoxes(db, 'batch-1')).toStrictEqual(5555)
+
+  await db.put('settings', { active: 'active', batch: 'batch-0' })
+  await db.put('accounts', {
+    address: addresses[0],
+    inventory: '[]',
+    fragments: 0
+  })
+
+  await addPrize(
+    {
+      batch: 'batch-1',
+      name: 'Test',
+      description: 'Test',
+      image: 'test.png',
+      count: 100
+    },
+    db
+  )
+
+  await addPrize(
+    {
+      batch: 'batch-1',
+      name: 'Test Wl',
+      description: 'Test Wl',
+      image: 'test.png',
+      count: 100
+    },
+    db
+  )
+
+  // need to do like open multiple batches
+  
+  // for (let i = 0; i < 2; i++) {
+  //   const nextBatchAddresses = addresses.slice(0, 4000)
+  //   const nextBatchContract = new MockContractor(nextBatchAddresses)
+  //   await activate(undefined, db, nextBatchContract) 
+  // }
+
+  const nextBatchAddresses = addresses.slice(0, 4000)
+  const nextBatchContract = new MockContractor(nextBatchAddresses)
+  await activate(undefined, db, nextBatchContract) 
+  
+
+  expect(await countBoxes(db, 'batch-1')).toStrictEqual(4000)
+  await checkBadLuckCount(db, 'batch-1')
+    
+
+
+    // query the accounts made in testing
+  const accountAddresses = await db.query('batches', 'batch', 'batch-1')
+  for (const address of accountAddresses.Items) {
+    const acc = (await db.get('accounts', 'address', address.address)).Item
+    if(acc.badLuckCount!== 0){
+      console.log(acc.badLuckCount)
+    }
+    expect(acc.badLuckCount).toBeLessThanOrEqual(26);
+  }
+})
