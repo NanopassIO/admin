@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@babel/core": "^7.17.5",
+    "@babel/plugin-transform-react-jsx": "^7.18.6",
     "@babel/preset-env": "^7.16.11",
     "@babel/preset-typescript": "^7.16.7",
     "@netlify/functions": "^1.0.0",

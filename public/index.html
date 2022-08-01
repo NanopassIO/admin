@@ -2,7 +2,7 @@
 <html>
   <head>
     <link
-      href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"
+      href="https://cdn.skypack.dev/tailwindcss@^2/dist/tailwind.min.css"
       rel="stylesheet"
     />
     <link
@@ -13,9 +13,15 @@
     <link rel="stylesheet" href="css/ownersportal.css" />
     <link rel="stylesheet" href="css/tabs.css" />
     <link rel="stylesheet" href="css/ui-edits.css" />
+
+    <!--
+      One of the bottlenecks was that loading xlsx from unpkg took a long time. Hence,
+      to make it quicker, output from "https://unpkg.com/xlsx@0.17.5/dist/xlsx.full.min.js"
+      is self-hosted at lib/xlsx-[0.17.5].full.min.js
+    -->
     <script
       lang="javascript"
-      src="https://unpkg.com/xlsx@0.17.5/dist/xlsx.full.min.js"
+      src="lib/xlsx-[0.17.5].full.min.js"
     ></script>
     <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
     <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>

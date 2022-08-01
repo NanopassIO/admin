@@ -1,9 +1,9 @@
-import { h, render } from 'https://unpkg.com/preact@latest?module'
+import { h, render } from 'https://cdn.skypack.dev/preact';
 import {
   useState,
   useEffect
-} from 'https://unpkg.com/preact/hooks/dist/hooks.module.js?module'
-import htm from 'https://unpkg.com/htm?module'
+} from 'https://cdn.skypack.dev/preact/hooks'
+import htm from 'https://cdn.skypack.dev/htm/'
 import {
   preloadBatch,
   getBatch,
