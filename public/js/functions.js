@@ -21,7 +21,9 @@ function handleError(response, setError) {
       case 401:
         throw new Error('Please enter a valid password.')
       case 403:
-        throw new Error('Sorry, you do not have the permission to access the requested resource.')
+        throw new Error(
+          'Sorry, you do not have the permission to access the requested resource.'
+        )
       case 404:
         throw new Error('Sorry, request not found.')
       case 405:
@@ -29,14 +31,17 @@ function handleError(response, setError) {
       case 500:
         throw new Error('Something went wrong.')
     }
-    
-  }else{
+  } else {
     setError('')
   }
 }
 
-const scanAccountsWithPagination = async (params, setError, attributes = '') => {
-  let LastEvaluatedKey = undefined;
+const scanAccountsWithPagination = async (
+  params,
+  setError,
+  attributes = ''
+) => {
+  let LastEvaluatedKey = undefined
   let scanResult = await fetch('/.netlify/functions/get-accounts', {
     body: JSON.stringify({
       ...params,
@@ -48,13 +53,13 @@ const scanAccountsWithPagination = async (params, setError, attributes = '') => 
   })
 
   handleError(scanResult, setError)
-  
+
   const scanResultJson = await scanResult.json()
 
   let combined = scanResultJson.Items
   LastEvaluatedKey = scanResultJson.LastEvaluatedKey
-  
-  while(LastEvaluatedKey) {
+
+  while (LastEvaluatedKey) {
     const nextPage = await fetch('/.netlify/functions/get-accounts', {
       body: JSON.stringify({
         ...params,
@@ -68,14 +73,14 @@ const scanAccountsWithPagination = async (params, setError, attributes = '') => 
 
     handleError(nextPage, setError)
     const nextPageJson = await nextPage.json()
-    
-    if(nextPageJson.Count === 0) break
 
-    combined = [...combined, ...nextPageJson.Items];
+    if (nextPageJson.Count === 0) break
+
+    combined = [...combined, ...nextPageJson.Items]
     LastEvaluatedKey = nextPageJson.LastEvaluatedKey
   }
 
-  return combined;
+  return combined
 }
 
 async function fetchResponse(url, params, setError) {
@@ -155,6 +160,21 @@ export async function getMarketplaceItems(setError) {
   }
 }
 
+export async function getGamePrizes(setError) {
+  $.LoadingOverlay('show')
+  try {
+    const response = await fetch('/.netlify/functions/get-game-prizes', {
+      method: 'POST'
+    })
+    handleError(response, setError)
+    return await response.json()
+  } catch (e) {
+    console.log(e.message)
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
+
 export async function giveFragments(params, setError) {
   await fetchResponse('/.netlify/functions/give-fragments', params, setError)
 }
@@ -188,7 +208,7 @@ export async function getBatch(params, setError) {
     })
 
     handleError(response, setError)
-  
+
     const json = await response.json()
     const converted = json.Items.map((x) => ({
       ...x,
@@ -306,7 +326,14 @@ export async function getAccounts(params, setError) {
     }))
 
     const ws = XLSX.utils.json_to_sheet(converted, {
-      header: ['address', 'badLuckCount', 'discord', 'discordDevId', 'fragments', 'inventory']
+      header: [
+        'address',
+        'badLuckCount',
+        'discord',
+        'discordDevId',
+        'fragments',
+        'inventory'
+      ]
     })
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Accounts')
@@ -333,7 +360,11 @@ export async function getPurchases(params, setError) {
         .join(' | ')
     }
 
-    const allAccounts = await scanAccountsWithPagination(params, setError, 'address, discord, discordDevId')
+    const allAccounts = await scanAccountsWithPagination(
+      params,
+      setError,
+      'address, discord, discordDevId'
+    )
     const accountsJson = allAccounts.map((x) => ({
       ...x,
       address: performAddressReplacement(x.address)
@@ -387,8 +418,12 @@ export async function getPurchases(params, setError) {
 export async function winners(params, search, setError) {
   $.LoadingOverlay('show')
   try {
-    const allAccounts = await scanAccountsWithPagination(params, setError, 'discord, address')
-    
+    const allAccounts = await scanAccountsWithPagination(
+      params,
+      setError,
+      'discord, address'
+    )
+
     const accountsJson = allAccounts.map((x) => ({
       ...x,
       address: performAddressReplacement(x.address)
@@ -444,4 +479,12 @@ export async function winners(params, search, setError) {
   } finally {
     $.LoadingOverlay('hide')
   }
+}
+
+export async function addGamePrize(params, setError) {
+  await fetchResponse('/.netlify/functions/add-game-prize', params, setError)
+}
+
+export async function calculateWinner(params, setError) {
+  await fetchResponse('/.netlify/functions/calculate-winner', params, setError)
 }
