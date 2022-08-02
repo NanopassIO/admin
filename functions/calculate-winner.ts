@@ -20,19 +20,27 @@ const update = util.promisify(docClient.update).bind(docClient)
 const put = util.promisify(docClient.put).bind(docClient)
 
 const calculateWinner = async (bidsObj) => {
-  let winnerBidComparisonNum = 9999
+  let winnerBidComparisonNum = 9999999
   for (const i in bidsObj) {
     if (bidsObj[i].length < 1) continue
     const comparisonNum = parseFloat(`${bidsObj[i].length}.${i}1`)
-    if (comparisonNum < winnerBidComparisonNum)
+
+    if (
+      comparisonNum.toString().length <
+        winnerBidComparisonNum.toString().length ||
+      (comparisonNum.toString().length ===
+        winnerBidComparisonNum.toString().length &&
+        comparisonNum < winnerBidComparisonNum)
+    ) {
       winnerBidComparisonNum = comparisonNum
+    }
   }
 
   const winnerBid = winnerBidComparisonNum.toString().split('.')[1].slice(0, -1)
   let winner = bidsObj[winnerBid][0]
 
-  if (winner.length > 1) {
-    winner = winner[crypto.randomInt(winner.length)]
+  if (bidsObj[winnerBid].length > 1) {
+    winner = bidsObj[winnerBid][crypto.randomInt(winner.length)]
   }
 
   return winner
@@ -72,7 +80,7 @@ async function handle(data) {
         })
       ).Items[0]
 
-      if (winnerAcc.fragments < winner.bid) {
+      if (parseInt(winnerAcc.fragments) < parseInt(winner.bid)) {
         bidsObj[winner.bid] = bidsObj[winner.bid].filter(
           (player) => player.address !== winner.address
         )
@@ -84,7 +92,27 @@ async function handle(data) {
 
     for (let i = 0; i < result.Items.length; i++) {
       try {
-        // not handling case where player does not have enough frags
+        const currAccount = (
+          await query({
+            TableName: 'accounts',
+            KeyConditionExpression: 'address = :address',
+            ExpressionAttributeValues: {
+              ':address': result.Items[i].address
+            }
+          })
+        ).Items[0]
+
+        const currPlayerBid = parseInt(result.Items[i].bid)
+        const winnerBid = parseInt(verifiedWinner.bid)
+        const currPlayerFrags = parseInt(currAccount.fragments)
+
+        let fragsToDeduct =
+          currPlayerBid < winnerBid ? currPlayerBid : winnerBid
+
+        if (currPlayerFrags < fragsToDeduct) {
+          fragsToDeduct = currPlayerFrags
+        }
+
         await update({
           TableName: 'accounts',
           Key: {
@@ -93,10 +121,7 @@ async function handle(data) {
           UpdateExpression: 'set fragments = fragments - :val',
           ConditionExpression: 'fragments >= :val',
           ExpressionAttributeValues: {
-            ':val':
-              result.Items[i].bid < verifiedWinner.bid
-                ? result.Items[i].bid
-                : verifiedWinner.bid
+            ':val': currPlayerBid < winnerBid ? currPlayerBid : winnerBid
           }
         })
       } catch (e) {
