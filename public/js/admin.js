@@ -1,9 +1,9 @@
-import { h, render } from 'https://cdn.skypack.dev/preact';
+import { h, render } from '../lib/preact.module.js';
 import {
   useState,
   useEffect
-} from 'https://cdn.skypack.dev/preact/hooks'
-import htm from 'https://cdn.skypack.dev/htm/'
+} from '../lib/preact-hooks.module.js'
+import htm from '../lib/htm.module.js'
 import {
   preloadBatch,
   getBatch,
