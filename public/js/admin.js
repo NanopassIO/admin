@@ -235,7 +235,8 @@ function App() {
         </div>
         <button
           id="click"
-          onClick=${() => alert('Disabled for safety')
+          onClick=${
+            () => alert('Disabled for safety')
             // preloadBatch(
             //   {
             //     password: $('#password').val(),
@@ -252,7 +253,8 @@ function App() {
         ><br /><br />
         <button
           id="click"
-          onClick=${() => alert('Disabled for safety')
+          onClick=${
+            () => alert('Disabled for safety')
             // activateBatch(
             //   {
             //     password: $('#password').val(),
@@ -269,7 +271,8 @@ function App() {
         ><br /><br />
         <button
           id="click"
-          onClick=${() => alert('Disabled for safety')
+          onClick=${
+            () => alert('Disabled for safety')
             // overrideActiveBatch(
             //   {
             //     password: $('#password').val(),
@@ -493,6 +496,15 @@ function App() {
               step="1"
               id="marketplaceCost"
               name="marketplaceCost"
+              class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          </div>
+          <div class="input-group">
+            <label for="itemStartDate">Item Start Date & Time:</label>
+            <input
+              type="datetime-local"
+              id="itemStartDate"
+              name="itemStartDate"
               class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
           </div>
