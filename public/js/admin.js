@@ -525,6 +525,13 @@ function App() {
           <button
             id="click"
             onClick=${async () => {
+              const itemStartDate = new Date($('#itemStartDate').val())
+
+              if (!itemStartDate) {
+                alert('Please remember to input item start date/time')
+                return
+              }
+
               await addMarketplaceItem(
                 {
                   password: $('#password').val(),
@@ -535,7 +542,8 @@ function App() {
                     supply: $('#marketplaceSupply').val().trim(),
                     instock: $('#marketplaceInstock').val().trim(),
                     cost: $('#marketplaceCost').val().trim(),
-                    active: $('#marketplaceActive').is(':checked')
+                    active: $('#marketplaceActive').is(':checked'),
+                    itemStartDate: itemStartDate.getTime()
                   }
                 },
                 setError
