@@ -23,6 +23,7 @@ import {
   getAddressLogs
 } from './functions.js'
 import { tabFunction, openDefaultTab } from './tabs.js'
+import moment from 'https://unpkg.com/moment@latest?module'
 
 const $ = window.$
 const html = htm.bind(h)
@@ -48,6 +49,9 @@ function App() {
   const [marketplaceImage, setMarketplaceImage] = useState('')
   const [marketplaceName, setMarketplaceName] = useState('')
   const [marketplaceItems, setMarketplaceItems] = useState([])
+
+  console.log(marketplaceItems[0]?.itemStartTimestamp)
+  console.log(marketplaceItems[10]?.itemStartTimestamp)
 
   const handleGetMarketplaceItems = async () => {
     const results = await getMarketplaceItems(setError)
@@ -593,7 +597,9 @@ function App() {
             ${marketplaceItems.map(
               (i) =>
                 html`<div
-                  style="padding: 8px; border: 1px solid ${i.active
+                  style="padding: 8px; border: 1px solid ${i.active &&
+                  i.itemStartTimestamp &&
+                  moment() > moment(i.itemStartTimestamp)
                     ? 'green'
                     : 'red'}; border-radius: 8px; cursor: pointer;"
                   onClick=${() => {
@@ -613,6 +619,16 @@ function App() {
                   <p>Cost: <b>${i.cost}</b></p>
                   <p>Supply: <b>${i.supply}</b></p>
                   <p>Instock: <b>${i.instock}</b></p>
+                  <p>
+                    Start Datetime:
+                    <b
+                      >${i.itemStartTimestamp
+                        ? moment(i.itemStartTimestamp)
+                            .local()
+                            .format('Do MMM YY, h:mm:ssa')
+                        : 'No Datetime set'}</b
+                    >
+                  </p>
                   <p>Active: <b>${i.active ? 'True' : 'False'}</b></p>
                 </div>`
             )}
