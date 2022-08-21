@@ -17,8 +17,7 @@ export async function handle(data: any, db?: DynamoDB) {
     name: data.name,
     description: data.description,
     image: data.image,
-    bidStartTimestamp: data.startDate,
-    bidEndTimestamp: data.endDate
+    batchNo: data.batch
   })
 }
 

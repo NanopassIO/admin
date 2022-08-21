@@ -449,11 +449,22 @@ function App() {
       >
         <div>
           <h1>Game Management</h1>
+          <div>Active Batch: ${activeBatch}</div>
+          <br />
           <div class="inventory-item">
             <picture>
               <img src="${bidImage}" class="inventoryImage" />
             </picture>
             <label class="inventoryLabel">${bidName}</label>
+          </div>
+          <div class="input-group">
+            <label for="batch">Batch:</label>
+            <input
+              type="batch"
+              id="gameBatch"
+              name="batch"
+              class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
           </div>
           <div class="input-group">
             <label for="gamePrizeName">Game Prize Name:</label>
@@ -488,36 +499,10 @@ function App() {
               class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
           </div>
-          <div class="input-group">
-            <label for="startDate">Game Start Date & Time:</label>
-            <input
-              type="datetime-local"
-              id="startDate"
-              name="startDate"
-              class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            />
-          </div>
-          <div class="input-group">
-            <label for="endDate">Game Start Date & Time:</label>
-            <input
-              type="datetime-local"
-              id="endDate"
-              name="endDate"
-              class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            />
-          </div>
           <br />
           <button
             id="click"
             onClick=${async () => {
-              const startDate = new Date($('#startDate').val())
-              const endDate = new Date($('#endDate').val())
-
-              if (!startDate || !endDate) {
-                alert('Please remember to input start and end date/time')
-                return
-              }
-
               await addGamePrize(
                 {
                   password: $('#password').val(),
@@ -525,8 +510,7 @@ function App() {
                     name: $('#gamePrizeName').val().trim(),
                     description: $('#gamePrizeDesc').val().trim(),
                     image: $('#gamePrizeImage').val().trim(),
-                    startDate: startDate.getTime(),
-                    endDate: endDate.getTime()
+                    batch: $('#gameBatch').val().trim()
                   }
                 },
                 setError
@@ -564,20 +548,8 @@ function App() {
                     <h6>Name: <b>${i.name}</b></h6>
                     <p>Description: <b>${i.description}</b></p>
                     <p>
-                      Start Datetime:
-                      <b
-                        >${moment(i.bidStartTimestamp)
-                          .local()
-                          .format('Do MMM YY, h:mm:ssa')}</b
-                      >
-                    </p>
-                    <p>
-                      End Datetime:
-                      <b
-                        >${moment(i.bidEndTimestamp)
-                          .local()
-                          .format('Do MMM YY, h:mm:ssa')}</b
-                      >
+                      Batch:
+                      <b> ${i.batch}</b>
                     </p>
                     <p>Winner Address: <b>${i.winnerAddress}</b></p>
                     <p>Winner Bid: <b>${i.winnerBid}</b></p>
