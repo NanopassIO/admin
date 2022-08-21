@@ -549,37 +549,11 @@ function App() {
                     <p>Description: <b>${i.description}</b></p>
                     <p>
                       Batch:
-                      <b> ${i.batch}</b>
+                      <b> ${i.batchNo}</b>
                     </p>
                     <p>Winner Address: <b>${i.winnerAddress}</b></p>
                     <p>Winner Bid: <b>${i.winnerBid}</b></p>
                   </div>
-
-                  <button
-                    id="click"
-                    disabled=${i.winnerAddress && i.winnerBid}
-                    onClick=${async () => {
-                      if (!i.winnerAddress && !i.winnerBid) {
-                        await calculateWinner(
-                          {
-                            password: $('#password').val(),
-                            data: {
-                              name: i.name
-                            }
-                          },
-                          setError
-                        )
-                        handleGetGamePrizes()
-                      }
-                    }}
-                    class=" ${i.winnerAddress && i.winnerBid
-                      ? 'bg-gray-500 cursor-default'
-                      : 'bg-blue-500 hover:bg-blue-700'} text-white font-bold py-2 px-4 rounded mt-4"
-                  >
-                    ${i.winnerAddress && i.winnerBid
-                      ? 'Winner Calculated'
-                      : 'Calculate Winner'}
-                  </button>
                 </div>`
             )}
           </div>
