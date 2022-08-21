@@ -30,10 +30,12 @@ function handleError(response, setError) {
         throw new Error('Unable to access the requested resource.')
       case 500:
         throw new Error('Something went wrong.')
-    }
-  } else {
-    setError('')
+    }    
+    return true
   }
+
+  setError('')
+  return false
 }
 
 const scanAccountsWithPagination = async (
@@ -158,6 +160,34 @@ export async function getMarketplaceItems(setError) {
   } finally {
     $.LoadingOverlay('hide')
   }
+}
+
+export async function massRefund(params, setError) {
+  $.LoadingOverlay('show')
+  try {
+    const addresses = params.data.address.split('\n').filter(x => x.length > 1)
+    for(const address of addresses) {
+      const response = await fetch('/.netlify/functions/give-fragments', {
+        body: JSON.stringify({
+          password: params.password,
+          data: {
+            address: address.trim(),
+            amount: params.data.amount
+          }
+        }),
+        method: 'POST'
+      })
+  
+      if(!handleError(response, setError)) {
+        console.log(`Refunded ${address} with ${params.data.amount} fragments`)
+      }
+    }
+  } catch (e) {
+    setError(e.message)
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+
 }
 
 export async function giveFragments(params, setError) {
@@ -384,15 +414,16 @@ export async function getPurchases(params, setError) {
         'discordDeveloperID'
       ]
     })
+    const cleanName = params.data.name.replace('/','-')
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(
       wb,
       ws,
-      params.data ? `${params.data.name} Purchases` : 'Purchases'
+      params.data ? `${cleanName} Purchases` : 'Purchases'
     )
     XLSX.writeFile(
       wb,
-      params.data ? `${params.data.name} Purchases.xlsx` : 'Purchases.xlsx'
+      params.data ? `${cleanName} Purchases.xlsx` : 'Purchases.xlsx'
     )
     $.LoadingOverlay('hide')
   } catch (e) {
