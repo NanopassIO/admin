@@ -23,7 +23,7 @@ import {
   getAddressLogs
 } from './functions.js'
 import { tabFunction, openDefaultTab } from './tabs.js'
-import moment from 'https://unpkg.com/moment@latest?module'
+import moment from '../lib/moment.module.js'
 
 const $ = window.$
 const html = htm.bind(h)
