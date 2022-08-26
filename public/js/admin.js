@@ -1,9 +1,9 @@
-import { h, render } from 'https://unpkg.com/preact@latest?module'
+import { h, render } from '../lib/preact.module.js';
 import {
   useState,
   useEffect
-} from 'https://unpkg.com/preact/hooks/dist/hooks.module.js?module'
-import htm from 'https://unpkg.com/htm?module'
+} from '../lib/preact-hooks.module.js'
+import htm from '../lib/htm.module.js'
 import {
   getBatch,
   getPrizeList,
