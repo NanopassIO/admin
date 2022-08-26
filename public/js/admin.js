@@ -5,14 +5,11 @@ import {
 } from 'https://unpkg.com/preact/hooks/dist/hooks.module.js?module'
 import htm from 'https://unpkg.com/htm?module'
 import {
-  preloadBatch,
   getBatch,
-  activateBatch,
   getPrizeList,
   addPrize,
   deletePrize,
   getActiveBatch,
-  overrideActiveBatch,
   giveFragments,
   getAccounts,
   getPurchases,
@@ -23,10 +20,10 @@ import {
   getAddressLogs,
   addGamePrize,
   getGamePrizes,
-  calculateWinner
+  massRefund
 } from './functions.js'
 import { tabFunction, openDefaultTab } from './tabs.js'
-import moment from 'https://unpkg.com/moment@latest?module'
+import moment from '../lib/moment.module.js'
 
 const $ = window.$
 const html = htm.bind(h)
@@ -55,6 +52,9 @@ function App() {
   const [bidImage, setBidImage] = useState('')
   const [bidName, setBidName] = useState('')
   const [gamePrizes, setGamePrizes] = useState([])
+
+  console.log(marketplaceItems[0]?.itemStartTimestamp)
+  console.log(marketplaceItems[10]?.itemStartTimestamp)
 
   const handleGetMarketplaceItems = async () => {
     const results = await getMarketplaceItems(setError)
@@ -639,6 +639,15 @@ function App() {
               class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
           </div>
+          <div class="input-group">
+            <label for="itemStartDate">Item Start Date & Time:</label>
+            <input
+              type="datetime-local"
+              id="itemStartDate"
+              name="itemStartDate"
+              class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          </div>
           <div
             class="input-group"
             style="margin: 1rem 1rem 0 1rem; flex-direction: row; align-items: center;"
@@ -656,6 +665,13 @@ function App() {
           <button
             id="click"
             onClick=${async () => {
+              const itemStartDate = new Date($('#itemStartDate').val())
+
+              if (!itemStartDate) {
+                alert('Please remember to input item start date/time')
+                return
+              }
+
               await addMarketplaceItem(
                 {
                   password: $('#password').val(),
@@ -666,7 +682,8 @@ function App() {
                     supply: $('#marketplaceSupply').val().trim(),
                     instock: $('#marketplaceInstock').val().trim(),
                     cost: $('#marketplaceCost').val().trim(),
-                    active: $('#marketplaceActive').is(':checked')
+                    active: $('#marketplaceActive').is(':checked'),
+                    itemStartDate: itemStartDate.getTime()
                   }
                 },
                 setError
@@ -716,7 +733,9 @@ function App() {
             ${marketplaceItems.map(
               (i) =>
                 html`<div
-                  style="padding: 8px; border: 1px solid ${i.active
+                  style="padding: 8px; border: 1px solid ${i.active &&
+                  i.itemStartTimestamp &&
+                  moment() > moment(i.itemStartTimestamp)
                     ? 'green'
                     : 'red'}; border-radius: 8px; cursor: pointer;"
                   onClick=${() => {
@@ -736,6 +755,16 @@ function App() {
                   <p>Cost: <b>${i.cost}</b></p>
                   <p>Supply: <b>${i.supply}</b></p>
                   <p>Instock: <b>${i.instock}</b></p>
+                  <p>
+                    Start Datetime:
+                    <b
+                      >${i.itemStartTimestamp
+                        ? moment(i.itemStartTimestamp)
+                            .local()
+                            .format('Do MMM YY, h:mm:ssa')
+                        : 'No Datetime set'}</b
+                    >
+                  </p>
                   <p>Active: <b>${i.active ? 'True' : 'False'}</b></p>
                 </div>`
             )}
@@ -841,6 +870,33 @@ function App() {
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
           Give Balance (Testing Only)</button
+        ><br /><br />
+        <div class="input-group">
+          <label for="massAddresses">Mass Refund:</label>
+          <textarea
+            type="massAddresses"
+            id="massAddresses"
+            name="massAddresses"
+            class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          />
+        </div>
+        <br />
+        <button
+          id="click"
+          onClick=${() =>
+            massRefund(
+              {
+                password: $('#password').val(),
+                data: {
+                  address: $('#massAddresses').val(),
+                  amount: $('#fragmentAmount').val()
+                }
+              },
+              setError
+            )}
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Mass Refund</button
         ><br /><br />
       </div>
     </div>

@@ -31,9 +31,12 @@ function handleError(response, setError) {
       case 500:
         throw new Error('Something went wrong.')
     }
-  } else {
-    setError('')
+
+    return true
   }
+
+  setError('')
+  return false
 }
 
 const scanAccountsWithPagination = async (
@@ -170,6 +173,35 @@ export async function getGamePrizes(setError) {
     return await response.json()
   } catch (e) {
     console.log(e.message)
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
+
+export async function massRefund(params, setError) {
+  $.LoadingOverlay('show')
+  try {
+    const addresses = params.data.address
+      .split('\n')
+      .filter((x) => x.length > 1)
+    for (const address of addresses) {
+      const response = await fetch('/.netlify/functions/give-fragments', {
+        body: JSON.stringify({
+          password: params.password,
+          data: {
+            address: address.trim(),
+            amount: params.data.amount
+          }
+        }),
+        method: 'POST'
+      })
+
+      if (!handleError(response, setError)) {
+        console.log(`Refunded ${address} with ${params.data.amount} fragments`)
+      }
+    }
+  } catch (e) {
+    setError(e.message)
   } finally {
     $.LoadingOverlay('hide')
   }
@@ -363,7 +395,7 @@ export async function getPurchases(params, setError) {
     const allAccounts = await scanAccountsWithPagination(
       params,
       setError,
-      'address, discord, discordDevId'
+      'address, wlAddress, discord, discordDevId'
     )
     const accountsJson = allAccounts.map((x) => ({
       ...x,
@@ -381,7 +413,8 @@ export async function getPurchases(params, setError) {
       const acc = accountByAddress(x.address)
       return {
         ...x,
-        address: performAddressReplacement(x.address),
+        address: acc.wlAddress ?? performAddressReplacement(x.address),
+        originalAddress: performAddressReplacement(acc.address),
         itemData: objToStr(JSON.parse(x.itemData)),
         itemName: x.itemName,
         discord: acc.discord ?? '',
@@ -398,15 +431,16 @@ export async function getPurchases(params, setError) {
         'discordDeveloperID'
       ]
     })
+    const cleanName = params.data?.name.replace('/', '-')
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(
       wb,
       ws,
-      params.data ? `${params.data.name} Purchases` : 'Purchases'
+      params.data ? `${cleanName} Purchases` : 'Purchases'
     )
     XLSX.writeFile(
       wb,
-      params.data ? `${params.data.name} Purchases.xlsx` : 'Purchases.xlsx'
+      params.data ? `${cleanName} Purchases.xlsx` : 'Purchases.xlsx'
     )
     $.LoadingOverlay('hide')
   } catch (e) {
