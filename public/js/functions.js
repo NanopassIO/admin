@@ -31,6 +31,7 @@ function handleError(response, setError) {
       case 500:
         throw new Error('Something went wrong.')
     }
+
     return true
   }
 
@@ -151,6 +152,21 @@ export async function getMarketplaceItems(setError) {
   $.LoadingOverlay('show')
   try {
     const response = await fetch('/.netlify/functions/get-marketplace', {
+      method: 'POST'
+    })
+    handleError(response, setError)
+    return await response.json()
+  } catch (e) {
+    console.log(e.message)
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
+
+export async function getGamePrizes(setError) {
+  $.LoadingOverlay('show')
+  try {
+    const response = await fetch('/.netlify/functions/get-game-prizes', {
       method: 'POST'
     })
     handleError(response, setError)
@@ -497,4 +513,12 @@ export async function winners(params, search, setError) {
   } finally {
     $.LoadingOverlay('hide')
   }
+}
+
+export async function addGamePrize(params, setError) {
+  await fetchResponse('/.netlify/functions/add-game-prize', params, setError)
+}
+
+export async function calculateWinner(params, setError) {
+  await fetchResponse('/.netlify/functions/calculate-winner', params, setError)
 }
