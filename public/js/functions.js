@@ -420,11 +420,13 @@ export async function getPurchases(params, setError) {
     XLSX.utils.book_append_sheet(
       wb,
       ws,
-      params.data ? `${cleanName} Purchases` : 'Purchases'
+      params.data ? `${cleanName.slice(0, 20)} Purchases` : 'Purchases'
     )
     XLSX.writeFile(
       wb,
-      params.data ? `${cleanName} Purchases.xlsx` : 'Purchases.xlsx'
+      params.data
+        ? `${cleanName.slice(0, 15)} Purchases.xlsx`
+        : 'Purchases.xlsx'
     )
     $.LoadingOverlay('hide')
   } catch (e) {
