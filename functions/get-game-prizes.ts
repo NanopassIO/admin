@@ -5,6 +5,7 @@ import {
   HandlerContext,
   HandlerCallback
 } from '@netlify/functions'
+import { DynamoDB } from '../src/db'
 
 AWS.config.update({
   region: process.env.REGION,
@@ -15,13 +16,71 @@ AWS.config.update({
 const docClient = new AWS.DynamoDB.DocumentClient()
 const scan = util.promisify(docClient.scan).bind(docClient)
 
-async function handle() {
+const calculateWinningBid = async (bidsObj) => {
+  let winnerBidComparisonNum = 9999999
+  for (const i in bidsObj) {
+    if (bidsObj[i].length < 1) continue
+    const comparisonNum = parseFloat(`${bidsObj[i].length}.${i}1`)
+
+    if (
+      comparisonNum.toString().length <
+        winnerBidComparisonNum.toString().length ||
+      (comparisonNum.toString().length ===
+        winnerBidComparisonNum.toString().length &&
+        comparisonNum < winnerBidComparisonNum)
+    ) {
+      winnerBidComparisonNum = comparisonNum
+    }
+  }
+
+  const winningBid = winnerBidComparisonNum
+    .toString()
+    .split('.')[1]
+    .slice(0, -1)
+
+  return winningBid
+}
+
+async function handle(data: any, db?: DynamoDB) {
   try {
     const gamePrizes = await scan({
       TableName: 'gameprize'
     })
 
-    return gamePrizes.Items
+    const activePrize = gamePrizes.Items.filter(
+      (prize) => prize.batchNo === data.batch
+    )
+
+    const result = await scan({
+      TableName: 'bids',
+      FilterExpression: 'prizeToBidFor = :val',
+      ExpressionAttributeValues: {
+        ':val': activePrize[0].name
+      }
+    })
+
+    const currentTotalBids = result.Items.length
+
+    const bidsObj = {}
+    result.Items.forEach((i) => {
+      if (bidsObj[i.bid]) {
+        bidsObj[i.bid].push(i)
+      } else {
+        bidsObj[i.bid] = [i]
+      }
+    })
+
+    const currentWinningBid = await calculateWinningBid(bidsObj)
+
+    const gamePrizesResult = gamePrizes.Items.map((prize) => {
+      if (prize.batchNo === data.batch) {
+        return { ...prize, currentTotalBids, currentWinningBid }
+      }
+      return prize
+    })
+
+    console.log(gamePrizesResult)
+    return gamePrizesResult
   } catch (e) {
     console.log(e.message)
   }
@@ -32,7 +91,8 @@ export const handler = (
   context: HandlerContext,
   callback: HandlerCallback
 ) => {
-  handle()
+  const json = JSON.parse(event.body)
+  handle(json.data)
     .then((response) => {
       return callback(null, {
         statusCode: 200,

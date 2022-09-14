@@ -163,10 +163,13 @@ export async function getMarketplaceItems(setError) {
   }
 }
 
-export async function getGamePrizes(setError) {
+export async function getGamePrizes(setError, activeBatch) {
   $.LoadingOverlay('show')
   try {
     const response = await fetch('/.netlify/functions/get-game-prizes', {
+      body: JSON.stringify({
+        data: { batch: activeBatch }
+      }),
       method: 'POST'
     })
     handleError(response, setError)

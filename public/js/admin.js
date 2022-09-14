@@ -53,16 +53,13 @@ function App() {
   const [bidName, setBidName] = useState('')
   const [gamePrizes, setGamePrizes] = useState([])
 
-  console.log(marketplaceItems[0]?.itemStartTimestamp)
-  console.log(marketplaceItems[10]?.itemStartTimestamp)
-
   const handleGetMarketplaceItems = async () => {
     const results = await getMarketplaceItems(setError)
     setMarketplaceItems(results)
   }
 
   const handleGetGamePrizes = async () => {
-    const results = await getGamePrizes(setError)
+    const results = await getGamePrizes(setError, activeBatch)
     setGamePrizes(results)
   }
 
@@ -71,7 +68,9 @@ function App() {
       setActiveBatch(settings.batch)
     })
     handleGetMarketplaceItems()
-    handleGetGamePrizes()
+    if (activeBatch) {
+      handleGetGamePrizes()
+    }
   }, [activeBatch])
 
   // const currTime = new Date().getTime()
@@ -553,6 +552,16 @@ function App() {
                     </p>
                     <p>Winner Address: <b>${i.winnerAddress}</b></p>
                     <p>Winner Bid: <b>${i.winnerBid}</b></p>
+                    <p>
+                      ${i.currentTotalBids ? 'Current Total Bids: ' : ''}<b
+                        >${i.currentTotalBids}</b
+                      >
+                    </p>
+                    <p>
+                      ${i.currentWinningBid ? 'Current Winning Bid: ' : ''}<b
+                        >${i.currentWinningBid}</b
+                      >
+                    </p>
                   </div>
                 </div>`
             )}
