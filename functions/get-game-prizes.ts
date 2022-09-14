@@ -79,7 +79,6 @@ async function handle(data: any, db?: DynamoDB) {
       return prize
     })
 
-    console.log(gamePrizesResult)
     return gamePrizesResult
   } catch (e) {
     console.log(e.message)
