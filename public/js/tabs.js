@@ -14,6 +14,8 @@ export function tabFunction(tabButton, tabName) {
     tablinks[i].className = tablinks[i].className.replace(' active', '')
   }
   document.getElementById(tabName).style.display =
-    tabName === 'marketplace-management' ? 'flex' : 'block'
+    tabName === 'marketplace-management' || tabName === 'game-management'
+      ? 'flex'
+      : 'block'
   document.getElementById(tabButton).className += ' active'
 }

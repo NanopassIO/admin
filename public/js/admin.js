@@ -5,14 +5,11 @@ import {
 } from 'https://unpkg.com/preact/hooks/dist/hooks.module.js?module'
 import htm from 'https://unpkg.com/htm?module'
 import {
-  preloadBatch,
   getBatch,
-  activateBatch,
   getPrizeList,
   addPrize,
   deletePrize,
   getActiveBatch,
-  overrideActiveBatch,
   giveFragments,
   getAccounts,
   getPurchases,
@@ -21,6 +18,8 @@ import {
   addMarketplaceItem,
   getMarketplaceItems,
   getAddressLogs,
+  addGamePrize,
+  getGamePrizes,
   massRefund
 } from './functions.js'
 import { tabFunction, openDefaultTab } from './tabs.js'
@@ -50,13 +49,18 @@ function App() {
   const [marketplaceImage, setMarketplaceImage] = useState('')
   const [marketplaceName, setMarketplaceName] = useState('')
   const [marketplaceItems, setMarketplaceItems] = useState([])
-
-  console.log(marketplaceItems[0]?.itemStartTimestamp)
-  console.log(marketplaceItems[10]?.itemStartTimestamp)
+  const [bidImage, setBidImage] = useState('')
+  const [bidName, setBidName] = useState('')
+  const [gamePrizes, setGamePrizes] = useState([])
 
   const handleGetMarketplaceItems = async () => {
     const results = await getMarketplaceItems(setError)
     setMarketplaceItems(results)
+  }
+
+  const handleGetGamePrizes = async () => {
+    const results = await getGamePrizes(setError, activeBatch)
+    setGamePrizes(results)
   }
 
   useEffect(() => {
@@ -64,7 +68,12 @@ function App() {
       setActiveBatch(settings.batch)
     })
     handleGetMarketplaceItems()
+    if (activeBatch) {
+      handleGetGamePrizes()
+    }
   }, [activeBatch])
+
+  // const currTime = new Date().getTime()
 
   return html`
     <label for="password">Password:</label>
@@ -99,6 +108,13 @@ function App() {
           onClick=${() => tabFunction('pm-button', 'prize-management')}
         >
           Prize Management
+        </button>
+        <button
+          class="tablinks"
+          id="gm-button"
+          onClick=${() => tabFunction('gm-button', 'game-management')}
+        >
+          Game Management
         </button>
         <button
           class="tablinks"
@@ -423,6 +439,134 @@ function App() {
         >
           Delete Prize</button
         ><br /><br />
+      </div>
+
+      <div
+        id="game-management"
+        class="tabcontent"
+        style="gap: 2%; width: 100%;"
+      >
+        <div>
+          <h1>Game Management</h1>
+          <div>Active Batch: ${activeBatch}</div>
+          <br />
+          <div class="inventory-item">
+            <picture>
+              <img src="${bidImage}" class="inventoryImage" />
+            </picture>
+            <label class="inventoryLabel">${bidName}</label>
+          </div>
+          <div class="input-group">
+            <label for="batch">Batch:</label>
+            <input
+              type="batch"
+              id="gameBatch"
+              name="batch"
+              class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          </div>
+          <div class="input-group">
+            <label for="gamePrizeName">Game Prize Name:</label>
+            <input
+              type="gamePrizeName"
+              onchange="${(e) => {
+                setBidName(e.target.value)
+              }}"
+              id="gamePrizeName"
+              name="gamePrizeName"
+              class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          </div>
+          <div class="input-group">
+            <label for="gamePrizeDesc">Game Prize Description:</label>
+            <textarea
+              type="gamePrizeDesc"
+              id="gamePrizeDesc"
+              name="gamePrizeDesc"
+              class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          </div>
+          <div class="input-group">
+            <label for="gamePrizeImage">Game Prize Image:</label>
+            <input
+              type="gamePrizeImage"
+              onchange="${(e) => {
+                setBidImage(e.target.value)
+              }}"
+              id="gamePrizeImage"
+              name="gamePrizeImage"
+              class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          </div>
+          <br />
+          <button
+            id="click"
+            onClick=${async () => {
+              await addGamePrize(
+                {
+                  password: $('#password').val(),
+                  data: {
+                    name: $('#gamePrizeName').val().trim(),
+                    description: $('#gamePrizeDesc').val().trim(),
+                    image: $('#gamePrizeImage').val().trim(),
+                    batch: $('#gameBatch').val().trim()
+                  }
+                },
+                setError
+              )
+              handleGetGamePrizes()
+            }}
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Add Game Prize</button
+          ><br /><br />
+        </div>
+        <div style="width: 100%;">
+          <h1>All Game Prizes</h1>
+          <div
+            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px;"
+          >
+            ${gamePrizes.map(
+              (i) =>
+                html`<div
+                  style="padding: 8px; border: 1px solid ${i.winnerAddress &&
+                  i.winnerBid
+                    ? 'red'
+                    : 'green'}; border-radius: 8px; cursor: pointer;"
+                >
+                  <div
+                    class="break-words"
+                    onClick=${() => {
+                      setBidImage(i.image)
+                      $('#gamePrizeName').val(i.name)
+                      $('#gamePrizeDesc').val(i.description)
+                      $('#gamePrizeImage').val(i.image)
+                    }}
+                  >
+                    <img src="${i.image}" class="inventoryImage" />
+                    <h6>Name: <b>${i.name}</b></h6>
+                    <p>Description: <b>${i.description}</b></p>
+                    <p>
+                      Batch:
+                      <b> ${i.batchNo}</b>
+                    </p>
+                    <p>Winner Address: <b>${i.winnerAddress}</b></p>
+                    <p>Winner Bid: <b>${i.winnerBid}</b></p>
+                    <p>
+                      ${i.currentTotalBids ? 'Current Total Bids: ' : ''}<b
+                        >${i.currentTotalBids}</b
+                      >
+                    </p>
+                    <p>
+                      ${i.currentWinningBid ? 'Current Winning Bid: ' : ''}<b
+                        >${i.currentWinningBid}</b
+                      >
+                    </p>
+                  </div>
+                </div>`
+            )}
+          </div>
+        </div>
       </div>
 
       <div
@@ -761,7 +905,7 @@ function App() {
             )}
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
-        Mass Refund</button
+          Mass Refund</button
         ><br /><br />
       </div>
     </div>
