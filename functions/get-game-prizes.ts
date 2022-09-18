@@ -63,6 +63,8 @@ async function handle(data: any, db?: DynamoDB) {
 
     const currentTotalBids = result.Items.length
 
+    if (currentTotalBids < 1) return gamePrizes.Items
+
     const bidsObj = {}
     result.Items.forEach((i) => {
       if (bidsObj[i.bid]) {
