@@ -22,14 +22,15 @@ const calculateWinningBid = async (bidsObj) => {
     if (bidsObj[i].length < 1) continue
     const comparisonNum = parseFloat(`${bidsObj[i].length}.${i}1`)
 
-    if (
-      comparisonNum.toString().length <
-        winnerBidComparisonNum.toString().length ||
-      (comparisonNum.toString().length ===
-        winnerBidComparisonNum.toString().length &&
-        comparisonNum < winnerBidComparisonNum)
-    ) {
-      winnerBidComparisonNum = comparisonNum
+    if (comparisonNum < winnerBidComparisonNum) {
+      const comparisonNumStr = comparisonNum.toString()
+      const winnerBidComparisonNumStr = winnerBidComparisonNum.toString()
+      if (
+        parseInt(comparisonNumStr) < parseInt(winnerBidComparisonNumStr) ||
+        comparisonNumStr.length <= winnerBidComparisonNumStr.length
+      ) {
+        winnerBidComparisonNum = comparisonNum
+      }
     }
   }
 
