@@ -51,6 +51,8 @@ async function handle(data: any, db?: DynamoDB) {
       (prize) => prize.batchNo === data.batch
     )
 
+    if (activePrize.length < 1) return gamePrizes.Items
+
     const result = await scan({
       TableName: 'bids',
       FilterExpression: 'prizeToBidFor = :val',
