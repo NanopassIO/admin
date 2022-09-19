@@ -8,22 +8,25 @@ const calculateWinner = async (bidsObj) => {
     if (bidsObj[i].length < 1) continue
     const comparisonNum = parseFloat(`${bidsObj[i].length}.${i}1`)
 
-    if (
-      comparisonNum.toString().length <
-        winnerBidComparisonNum.toString().length ||
-      (comparisonNum.toString().length ===
-        winnerBidComparisonNum.toString().length &&
-        comparisonNum < winnerBidComparisonNum)
-    ) {
-      winnerBidComparisonNum = comparisonNum
+    if (comparisonNum < winnerBidComparisonNum) {
+      const comparisonNumStr = comparisonNum.toString()
+      const winnerBidComparisonNumStr = winnerBidComparisonNum.toString()
+      if (
+        parseInt(comparisonNumStr) < parseInt(winnerBidComparisonNumStr) ||
+        comparisonNumStr.length <= winnerBidComparisonNumStr.length
+      ) {
+        winnerBidComparisonNum = comparisonNum
+      }
     }
   }
 
   const winnerBid = winnerBidComparisonNum.toString().split('.')[1].slice(0, -1)
-  let winner = bidsObj[winnerBid][0]
+  const playersWithWinningBid = bidsObj[winnerBid]
+  let winner = playersWithWinningBid[0]
 
-  if (bidsObj[winnerBid].length > 1) {
-    winner = bidsObj[winnerBid][crypto.randomInt(winner.length)]
+  if (playersWithWinningBid.length > 1) {
+    winner =
+      playersWithWinningBid[crypto.randomInt(playersWithWinningBid.length)]
   }
 
   return winner
