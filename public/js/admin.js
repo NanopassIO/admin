@@ -20,6 +20,7 @@ import {
   getAddressLogs,
   addGamePrize,
   getGamePrizes,
+  getAllBids,
   massRefund
 } from './functions.js'
 import { tabFunction, openDefaultTab } from './tabs.js'
@@ -562,6 +563,23 @@ function App() {
                         >${i.currentWinningBid}</b
                       >
                     </p>
+                    <button
+                      id="click"
+                      onClick=${async () => {
+                        await getAllBids(
+                          {
+                            password: $('#password').val(),
+                            data: {
+                              prizeToBidFor: i.name
+                            }
+                          },
+                          setError
+                        )
+                      }}
+                      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                    >
+                      Get All Bids
+                    </button>
                   </div>
                 </div>`
             )}
