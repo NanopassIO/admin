@@ -182,7 +182,6 @@ export async function getGamePrizes(setError, activeBatch) {
 }
 
 export async function getAllBids(params, setError) {
-  console.log(params)
   $.LoadingOverlay('show')
   try {
     const response = await fetch('/.netlify/functions/get-all-bids', {
