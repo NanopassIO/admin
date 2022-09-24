@@ -181,6 +181,38 @@ export async function getGamePrizes(setError, activeBatch) {
   }
 }
 
+export async function getAllBids(params, setError) {
+  $.LoadingOverlay('show')
+  try {
+    const response = await fetch('/.netlify/functions/get-all-bids', {
+      body: JSON.stringify(params),
+      method: 'POST'
+    })
+    handleError(response, setError)
+
+    const json = await response.json()
+
+    const converted = json.map((x) => ({
+      address: x.address,
+      prize: x.prizeToBidFor,
+      bid: x.bid
+    }))
+
+    const ws = XLSX.utils.json_to_sheet(converted, {
+      header: ['address', 'bid', 'prize']
+    })
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, `${converted[0].prize} Bids`)
+    XLSX.writeFile(wb, `${converted[0].prize} Bids.xlsx`)
+
+    return json
+  } catch (e) {
+    console.log(e.message)
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
+
 export async function massRefund(params, setError) {
   $.LoadingOverlay('show')
   try {
