@@ -230,6 +230,48 @@ export async function getActiveBatch(setError) {
   }
 }
 
+export async function getRemoteSlotGameWinningConfiguration(setError) {
+  $.LoadingOverlay('show')
+  try {
+    const response = await fetch(
+      '/.netlify/functions/get-winning-probability',
+      {
+        method: 'POST'
+      }
+    )
+    handleError(response, setError)
+
+    return await response.json()
+  } catch (e) {
+    setError(e.message)
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
+
+export async function updateRemoteSlotGameWinningConfiguration(
+  slotGameWinningConfig,
+  setError
+) {
+  $.LoadingOverlay('show')
+  try {
+    const response = await fetch(
+      '/.netlify/functions/set-winning-probability',
+      {
+        body: JSON.stringify(slotGameWinningConfig),
+        method: 'POST'
+      }
+    )
+    handleError(response, setError)
+
+    return await response.json()
+  } catch (e) {
+    setError(e.message)
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
+
 function performAddressReplacement(address) {
   return ADDRESS_MAPPING[address] ? ADDRESS_MAPPING[address] : address
 }
