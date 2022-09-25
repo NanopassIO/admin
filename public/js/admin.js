@@ -141,10 +141,10 @@ function App() {
         </button>
         <button
           class="tablinks"
-          id="gm-button"
+          id="sgm-button"
           onClick=${() => {
             fetchSlotGameWinningConfiguration()
-            return tabFunction('gm-button', 'slot-game-management')
+            return tabFunction('sgm-button', 'slot-game-management')
           }}
         >
           Slot Game Management
