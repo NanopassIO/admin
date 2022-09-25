@@ -28,7 +28,8 @@ async function handle() {
 
     return winningProbabilityConfig
   } catch (e) {
-    console.log(e.message)
+    console.log(e)
+    throw e
   }
 }
 
