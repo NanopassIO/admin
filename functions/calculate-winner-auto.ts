@@ -109,6 +109,8 @@ export async function handle() {
     }
   } while (!verifiedWinner)
 
+  console.log('Verified Winner', verifiedWinner)
+
   for (let i = 0; i < result.Items.length; i++) {
     try {
       const currAccount = (
@@ -131,22 +133,42 @@ export async function handle() {
         fragsToDeduct = currPlayerFrags
       }
 
-      await update({
-        TableName: 'accounts',
-        Key: {
-          address: result.Items[i].address
-        },
-        UpdateExpression: 'set fragments = fragments - :val',
-        ConditionExpression: 'fragments >= :val',
-        ExpressionAttributeValues: {
-          ':val': currPlayerBid < winnerBid ? currPlayerBid : winnerBid
+      const updatedAccount = (
+        await update({
+          TableName: 'accounts',
+          Key: {
+            address: result.Items[i].address
+          },
+          UpdateExpression: 'set fragments = fragments - :val',
+          ConditionExpression: 'fragments >= :val',
+          ExpressionAttributeValues: {
+            ':val': fragsToDeduct
+          },
+          ReturnValues: 'ALL_NEW'
+        })
+      ).Attributes
+
+      console.log(
+        `Deducted ${fragsToDeduct} frags from ${updatedAccount.address}. His bid was ${currPlayerBid}`
+      )
+
+      await put({
+        TableName: 'logs',
+        Item: {
+          address: updatedAccount.address,
+          activity: 'Stewpid Bids',
+          oldFrags: currPlayerFrags,
+          newFrags: updatedAccount.fragments,
+          timestamp: Date.now()
         }
       })
     } catch (e) {
+      console.log('Error', e)
       continue
     }
   }
 
+  console.log('Updating game prize winner')
   // update game winner & get game prize
   const gamePrize = (
     await update({
@@ -163,7 +185,9 @@ export async function handle() {
       ReturnValues: 'ALL_NEW'
     })
   ).Attributes
+  console.log('Updated game prize', gamePrize)
 
+  console.log('Updating winner Inventory')
   // update winner's inventory with game prize
   const inventory = JSON.parse(verifiedWinnerAcc.inventory)
   inventory.push(gamePrize)
