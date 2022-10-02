@@ -13,20 +13,25 @@ AWS.config.update({
 })
 
 const docClient = new AWS.DynamoDB.DocumentClient()
-const query = util.promisify(docClient.query).bind(docClient)
+const scan = util.promisify(docClient.scan).bind(docClient)
 
 async function handle() {
   try {
-    const config = await query({
-      TableName: 'slotGameConfiguration',
-      KeyConditionExpression: 'configType = :val',
-      ExpressionAttributeValues: {
-        ':val': 'WINNING_PROBABILITY'
-      }
+    const config = await scan({
+      TableName: 'slotGameConfiguration'
     })
-    const winningProbabilityConfig = JSON.parse(config.Items[0].configValue)
-
-    return winningProbabilityConfig
+    return {
+      winningLineProbability: JSON.parse(
+        config.Items.filter((o) => o.configType === 'WINNING_PROBABILITY').map(
+          (o) => o.configValue
+        )
+      ),
+      symbolConfig: JSON.parse(
+        config.Items.filter((o) => o.configType === 'SLOT_SYMBOLS_CONFIG').map(
+          (o) => o.configValue
+        )
+      )
+    }
   } catch (e) {
     console.log(e)
     throw e

@@ -22,8 +22,9 @@ import {
   getGamePrizes,
   getAllBids,
   massRefund,
-  getRemoteSlotGameWinningConfiguration,
-  updateRemoteSlotGameWinningConfiguration
+  updateRemoteSlotGameWinningConfiguration,
+  getRemoteSlotGameConfiguration,
+  updateRemoteSlotSymbolConfig
 } from './functions.js'
 import { tabFunction, openDefaultTab } from './tabs.js'
 import moment from '../lib/moment.module.js'
@@ -56,6 +57,7 @@ function App() {
   const [bidName, setBidName] = useState('')
   const [gamePrizes, setGamePrizes] = useState([])
   const [slotGameWinningConfig, setSlotGameWinningConfig] = useState([])
+  const [slotSymbolConfig, setSlotSymbolConfig] = useState([])
 
   const handleGetMarketplaceItems = async () => {
     const results = await getMarketplaceItems(setError)
@@ -67,20 +69,39 @@ function App() {
     setGamePrizes(results)
   }
 
-  const fetchSlotGameWinningConfiguration = async () => {
-    const results = await getRemoteSlotGameWinningConfiguration(setError)
-    const totalWeight = results.reduce(
+  const fetchSlotGameConfiguration = async () => {
+    const { winningLineProbability, symbolConfig } =
+      await getRemoteSlotGameConfiguration(setError)
+
+    const totalWinningLineWeight = winningLineProbability.reduce(
       (partialSum, o) => partialSum + o.weight,
       0
     )
-    const winningConfig = results.map((o) => {
-      return {
-        winningLine: o.id,
-        weight: o.weight,
-        probability: o.weight / totalWeight
-      }
-    })
-    setSlotGameWinningConfig(winningConfig)
+    setSlotGameWinningConfig(
+      winningLineProbability.map((o) => {
+        return {
+          id: o.id,
+          weight: o.weight,
+          probability: o.weight / totalWinningLineWeight
+        }
+      })
+    )
+
+    const totalSymbolOccurenceWeight = symbolConfig.reduce(
+      (partialSum, o) => partialSum + o.weight,
+      0
+    )
+
+    setSlotSymbolConfig(
+      symbolConfig.map((o) => {
+        return {
+          id: o.id,
+          payout: o.payout,
+          weight: o.weight,
+          probability: o.weight / totalSymbolOccurenceWeight
+        }
+      })
+    )
   }
 
   useEffect(() => {
@@ -94,7 +115,7 @@ function App() {
   }, [activeBatch])
 
   useEffect(() => {
-    fetchSlotGameWinningConfiguration()
+    fetchSlotGameConfiguration()
   }, [])
 
   // const currTime = new Date().getTime()
@@ -144,7 +165,6 @@ function App() {
           class="tablinks"
           id="sgm-button"
           onClick=${() => {
-            fetchSlotGameWinningConfiguration()
             return tabFunction('sgm-button', 'slot-game-management')
           }}
         >
@@ -622,62 +642,77 @@ function App() {
 
       <div id="slot-game-management" class="tabcontent" style="gap: 2%">
         <div>
-          <h1>Slot Game Management</h1>
-          <table class="text-center mt-5">
-            <tr>
-              <th>Number of winning lines</th>
-              <th>Weightage</th>
-              <th>Probability</th>
-            </tr>
-            ${slotGameWinningConfig.map(
-              (config, index) => html`
-                <tr>
-                  <td>${config.winningLine}</td>
-                  <td>
-                    <input
-                      value="${config.weight}"
-                      class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      onChange=${(event) => {
-                        let changedValue = parseFloat(event.target.value, 10)
-                        if (isNaN(changedValue)) {
-                          changedValue = 0
-                        }
-                        slotGameWinningConfig[index].weight = changedValue
-                        const totalWeight = slotGameWinningConfig.reduce(
-                          (partialSum, o) => partialSum + o.weight,
-                          0
-                        )
-                        const winningConfig = slotGameWinningConfig.map((o) => {
-                          return {
-                            winningLine: o.winningLine,
-                            weight: o.weight,
-                            probability: o.weight / totalWeight
+          <div class="flex flex-column">
+            <h1 class="w-full">Slot Game Management</h1>
+            <button
+              id="click"
+              onClick=${async () => {
+                fetchSlotGameConfiguration()
+              }}
+              class="w-5/12 bg-yellow-500 hover:bg-yellow-700 text-black font-bold py-2 px-4 rounded"
+            >
+              Refresh
+              <i class="fa fa-refresh ml-2" style="font-size:24px;"></i>
+            </button>
+          </div>
+          <div class="border-2 border-blue-700 p-5 rounded mb-5 mt-5">
+            <table class="text-center mt-5">
+              <tr>
+                <th>Number of winning lines</th>
+                <th>Weightage</th>
+                <th>Probability</th>
+              </tr>
+              ${slotGameWinningConfig.map(
+                (config, index) => html`
+                  <tr>
+                    <td>${config.id}</td>
+                    <td>
+                      <input
+                        value="${config.weight}"
+                        class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        onChange=${(event) => {
+                          let changedValue = parseFloat(event.target.value, 10)
+                          if (isNaN(changedValue)) {
+                            changedValue = 0
                           }
-                        })
-                        setSlotGameWinningConfig(winningConfig)
-                      }}
-                    />
-                  </td>
+                          slotGameWinningConfig[index].weight = changedValue
+                          const totalWeight = slotGameWinningConfig.reduce(
+                            (partialSum, o) => partialSum + o.weight,
+                            0
+                          )
+                          const winningConfig = slotGameWinningConfig.map(
+                            (o) => {
+                              return {
+                                id: o.id,
+                                weight: o.weight,
+                                probability: o.weight / totalWeight
+                              }
+                            }
+                          )
+                          setSlotGameWinningConfig(winningConfig)
+                        }}
+                      />
+                    </td>
 
-                  <td>${parseFloat(config.probability * 100).toFixed(2)}%</td>
-                </tr>
-              `
-            )}
-            <tr>
-              <td>Total</td>
-              <td>
-                <input
-                  readonly="readonly"
-                  value="${slotGameWinningConfig.reduce((partialSum, o) => {
-                    return partialSum + o.weight
-                  }, 0)}"
-                  class="shadow appearance-none border rounded m-4 py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline bg-gray-500 "
-                />
-              </td>
-              <td>100.00%</td>
-            </tr>
-          </table>
-          <br />
+                    <td>${parseFloat(config.probability * 100).toFixed(2)}%</td>
+                  </tr>
+                `
+              )}
+              <tr>
+                <td>Total</td>
+                <td>
+                  <input
+                    readonly="readonly"
+                    value="${slotGameWinningConfig.reduce((partialSum, o) => {
+                      return partialSum + o.weight
+                    }, 0)}"
+                    class="shadow appearance-none border rounded m-4 py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline bg-gray-500 "
+                  />
+                </td>
+                <td>100.00%</td>
+              </tr>
+            </table>
+          </div>
           <button
             id="click"
             onClick=${async () => {
@@ -685,13 +720,110 @@ function App() {
                 {
                   password: $('#password').val(),
                   winningProbabilityConfig: slotGameWinningConfig.map((o) => {
-                    return { id: o.winningLine, weight: o.weight }
+                    return { id: o.id, weight: o.weight }
                   })
                 },
                 setError
               )
             }}
             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Confirm the change</button
+          ><br /><br />
+          <div class="border-2 border-green-700 p-5 rounded mt-5">
+            <table class="text-center mt-5">
+              <tr>
+                <th>Slot Id</th>
+                <th>Payout</th>
+                <th>Weight</th>
+                <th>Probability</th>
+              </tr>
+              ${slotSymbolConfig.map(
+                (config, index) => html`
+                  <tr>
+                    <td>${config.id}</td>
+                    <td>
+                      <input
+                        value="${config.payout}"
+                        class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        onChange=${(event) => {
+                          let changedValue = parseFloat(event.target.value, 10)
+                          if (isNaN(changedValue)) {
+                            changedValue = 0
+                          }
+                          slotSymbolConfig[index].payout = changedValue
+                          setSlotSymbolConfig(slotSymbolConfig)
+                        }}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        value="${config.weight}"
+                        class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        onChange=${(event) => {
+                          let changedValue = parseFloat(event.target.value, 10)
+                          if (isNaN(changedValue)) {
+                            changedValue = 0
+                          }
+                          slotSymbolConfig[index].weight = changedValue
+                          const totalWeight = slotSymbolConfig.reduce(
+                            (partialSum, o) => partialSum + o.weight,
+                            0
+                          )
+                          const updatedConfig = slotSymbolConfig.map((o) => {
+                            return {
+                              id: o.id,
+                              weight: o.weight,
+                              payout: o.payout,
+                              probability: o.weight / totalWeight
+                            }
+                          })
+                          setSlotSymbolConfig(updatedConfig)
+                        }}
+                      />
+                    </td>
+                    <td>${parseFloat(config.probability * 100).toFixed(2)}%</td>
+                  </tr>
+                `
+              )}
+              <tr>
+                <td>Total</td>
+                <td>
+                  <input
+                    readonly="readonly"
+                    value=""
+                    class="invisible shadow appearance-none border rounded m-4 py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline bg-gray-500 "
+                  />
+                </td>
+
+                <td>
+                  <input
+                    readonly="readonly"
+                    value="${slotSymbolConfig.reduce((partialSum, o) => {
+                      return partialSum + o.weight
+                    }, 0)}"
+                    class="shadow appearance-none border rounded m-4 py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline bg-gray-500 "
+                  />
+                </td>
+                <td>100.00%</td>
+              </tr>
+            </table>
+          </div>
+          <br />
+          <button
+            id="click"
+            onClick=${async () => {
+              updateRemoteSlotSymbolConfig(
+                {
+                  password: $('#password').val(),
+                  slotSymbolConfig: slotSymbolConfig.map((o) => {
+                    return { id: o.id, payout: o.payout, weight: o.weight }
+                  })
+                },
+                setError
+              )
+            }}
+            class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
           >
             Confirm the change</button
           ><br /><br />
