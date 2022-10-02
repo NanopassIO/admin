@@ -734,8 +734,8 @@ function App() {
             <table class="text-center mt-5">
               <tr>
                 <th>Slot Id</th>
-                <th>Payout</th>
-                <th>Weight</th>
+                <th>Payout Ratio</th>
+                <th>Weightage</th>
                 <th>Probability</th>
               </tr>
               ${slotSymbolConfig.map(
@@ -747,12 +747,20 @@ function App() {
                         value="${config.payout}"
                         class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         onChange=${(event) => {
-                          let changedValue = parseFloat(event.target.value, 10)
+                          let changedValue = parseInt(event.target.value, 10)
                           if (isNaN(changedValue)) {
                             changedValue = 0
                           }
                           slotSymbolConfig[index].payout = changedValue
-                          setSlotSymbolConfig(slotSymbolConfig)
+                          const updatedConfig = slotSymbolConfig.map((o) => {
+                            return {
+                              id: o.id,
+                              weight: o.weight,
+                              payout: o.payout,
+                              probability: o.probability
+                            }
+                          })
+                          setSlotSymbolConfig(updatedConfig)
                         }}
                       />
                     </td>

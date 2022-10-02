@@ -67,9 +67,9 @@ const validateConfig = (slotSymbolConfig) => {
       }
     }
 
-    if (isNaN(config['payout'])) {
+    if (!Number.isInteger(config['payout'])) {
       throw {
-        errorMessage: 'Payout should be number'
+        errorMessage: 'Payout should be integer'
       }
     }
   }
