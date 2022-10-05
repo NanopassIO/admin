@@ -1,5 +1,5 @@
 {
-  "app": "node bin/hello-cdk.js",
+  "app": "node bin/admin-cdk.js",
   "watch": {
     "include": ["**"],
     "exclude": [
