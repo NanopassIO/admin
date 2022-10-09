@@ -45,7 +45,7 @@ const scanAccountsWithPagination = async (
   attributes = ''
 ) => {
   let LastEvaluatedKey = undefined
-  let scanResult = await fetch('/.netlify/functions/get-accounts', {
+  let scanResult = await fetch(functionHostResolver('get-accounts'), {
     body: JSON.stringify({
       ...params,
       data: {
@@ -63,7 +63,7 @@ const scanAccountsWithPagination = async (
   LastEvaluatedKey = scanResultJson.LastEvaluatedKey
 
   while (LastEvaluatedKey) {
-    const nextPage = await fetch('/.netlify/functions/get-accounts', {
+    const nextPage = await fetch(functionHostResolver('get-accounts'), {
       body: JSON.stringify({
         ...params,
         data: {
@@ -106,7 +106,7 @@ async function fetchResponse(url, params, setError) {
 
 export async function preloadBatch(params, setError) {
   await fetchResponse(
-    '/.netlify/functions/preload-batch-background',
+    functionHostResolver('preload-batch-background'),
     params,
     setError
   )
@@ -114,7 +114,7 @@ export async function preloadBatch(params, setError) {
 
 export async function activateBatch(params, setError) {
   await fetchResponse(
-    '/.netlify/functions/activate-batch-background',
+    functionHostResolver('activate-batch-background'),
     params,
     setError
   )
@@ -122,36 +122,36 @@ export async function activateBatch(params, setError) {
 
 export async function overrideActiveBatch(params, setError) {
   await fetchResponse(
-    '/.netlify/functions/override-active-batch',
+    functionHostResolver('override-active-batch'),
     params,
     setError
   )
 }
 
 export async function addPrize(params, setError) {
-  await fetchResponse('/.netlify/functions/add-prize', params, setError)
+  await fetchResponse(functionHostResolver('add-prize'), params, setError)
 }
 
 export async function giveBalance(params, setError) {
   await fetchResponse(
-    '/.netlify/functions/testing-give-balance',
+    functionHostResolver('testing-give-balance'),
     params,
     setError
   )
 }
 
 export async function deletePrize(params, setError) {
-  await fetchResponse('/.netlify/functions/delete-prize', params, setError)
+  await fetchResponse(functionHostResolver('delete-prize'), params, setError)
 }
 
 export async function addMarketplaceItem(params, setError) {
-  await fetchResponse('/.netlify/functions/add-marketplace', params, setError)
+  await fetchResponse(functionHostResolver('add-marketplace'), params, setError)
 }
 
 export async function getMarketplaceItems(setError) {
   $.LoadingOverlay('show')
   try {
-    const response = await fetch('/.netlify/functions/get-marketplace', {
+    const response = await fetch(functionHostResolver('get-marketplace'), {
       method: 'POST'
     })
     handleError(response, setError)
@@ -166,7 +166,7 @@ export async function getMarketplaceItems(setError) {
 export async function getGamePrizes(setError, activeBatch) {
   $.LoadingOverlay('show')
   try {
-    const response = await fetch('/.netlify/functions/get-game-prizes', {
+    const response = await fetch(functionHostResolver('get-game-prizes'), {
       body: JSON.stringify({
         data: { batch: activeBatch }
       }),
@@ -184,7 +184,7 @@ export async function getGamePrizes(setError, activeBatch) {
 export async function getAllBids(params, setError) {
   $.LoadingOverlay('show')
   try {
-    const response = await fetch('/.netlify/functions/get-all-bids', {
+    const response = await fetch(functionHostResolver('get-all-bids'), {
       body: JSON.stringify(params),
       method: 'POST'
     })
@@ -220,7 +220,7 @@ export async function massRefund(params, setError) {
       .split('\n')
       .filter((x) => x.length > 1)
     for (const address of addresses) {
-      const response = await fetch('/.netlify/functions/give-fragments', {
+      const response = await fetch(functionHostResolver('give-fragments'), {
         body: JSON.stringify({
           password: params.password,
           data: {
@@ -243,13 +243,13 @@ export async function massRefund(params, setError) {
 }
 
 export async function giveFragments(params, setError) {
-  await fetchResponse('/.netlify/functions/give-fragments', params, setError)
+  await fetchResponse(functionHostResolver('give-fragments'), params, setError)
 }
 
 export async function getActiveBatch(setError) {
   $.LoadingOverlay('show')
   try {
-    const response = await fetch('/.netlify/functions/get-active-batch', {
+    const response = await fetch(functionHostResolver('get-active-batch'), {
       method: 'POST'
     })
     handleError(response, setError)
@@ -269,7 +269,7 @@ function performAddressReplacement(address) {
 export async function getBatch(params, setError) {
   $.LoadingOverlay('show')
   try {
-    const response = await fetch('/.netlify/functions/get-batch', {
+    const response = await fetch(functionHostResolver('get-batch'), {
       body: JSON.stringify(params),
       method: 'POST'
     })
@@ -300,7 +300,7 @@ export async function getBatch(params, setError) {
 export async function getAddressLogs(params, setError) {
   $.LoadingOverlay('show')
   try {
-    const response = await fetch('/.netlify/functions/get-address-logs', {
+    const response = await fetch(functionHostResolver('get-address-logs'), {
       body: JSON.stringify(params),
       method: 'POST'
     })
@@ -360,7 +360,7 @@ export async function getAddressLogs(params, setError) {
 export async function getPrizeList(params, setError) {
   $.LoadingOverlay('show')
   try {
-    const response = await fetch('/.netlify/functions/get-prizes', {
+    const response = await fetch(functionHostResolver('get-prizes'), {
       body: JSON.stringify(params),
       method: 'POST'
     })
@@ -415,7 +415,7 @@ export async function getAccounts(params, setError) {
 export async function getPurchases(params, setError) {
   $.LoadingOverlay('show')
   try {
-    const response = await fetch('/.netlify/functions/get-purchases', {
+    const response = await fetch(functionHostResolver('get-purchases'), {
       body: JSON.stringify(params),
       method: 'POST'
     })
@@ -500,7 +500,7 @@ export async function winners(params, search, setError) {
       address: performAddressReplacement(x.address)
     }))
 
-    const batchResponse = await fetch('/.netlify/functions/get-batch', {
+    const batchResponse = await fetch(functionHostResolver('get-batch'), {
       body: JSON.stringify(params),
       method: 'POST'
     })
@@ -553,9 +553,17 @@ export async function winners(params, search, setError) {
 }
 
 export async function addGamePrize(params, setError) {
-  await fetchResponse('/.netlify/functions/add-game-prize', params, setError)
+  await fetchResponse(functionHostResolver('add-game-prize'), params, setError)
 }
 
 export async function calculateWinner(params, setError) {
-  await fetchResponse('/.netlify/functions/calculate-winner', params, setError)
+  await fetchResponse(
+    functionHostResolver('calculate-winner'),
+    params,
+    setError
+  )
+}
+
+const functionHostResolver = (functionName) => {
+  return `/.netlify/functions/${functionName}`
 }
