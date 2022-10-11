@@ -31,7 +31,6 @@ function handleError(response, setError) {
       case 500:
         throw new Error('Something went wrong.')
     }
-
     return true
   }
 
@@ -257,6 +256,63 @@ export async function getActiveBatch(setError) {
     return await response.json()
   } catch (e) {
     setError(e.message)
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
+
+export async function getRemoteSlotGameConfiguration(setError) {
+  $.LoadingOverlay('show')
+  try {
+    const response = await fetch('/.netlify/functions/get-slot-game-config', {
+      method: 'POST'
+    })
+    handleError(response, setError)
+
+    return await response.json()
+  } catch (e) {
+    setError(e.message)
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
+
+export async function updateRemoteSlotGameWinningConfiguration(
+  slotGameWinningConfig,
+  setError
+) {
+  $.LoadingOverlay('show')
+  try {
+    const response = await fetch(
+      '/.netlify/functions/set-winning-probability',
+      {
+        body: JSON.stringify(slotGameWinningConfig),
+        method: 'POST'
+      }
+    )
+    handleError(response, setError)
+
+    return await response.json()
+  } catch (e) {
+    setError(e.message)
+  } finally {
+    $.LoadingOverlay('hide')
+  }
+}
+
+export async function updateRemoteSlotSymbolConfig(slotSymbolConfig, setError) {
+  $.LoadingOverlay('show')
+  try {
+    const response = await fetch('/.netlify/functions/set-slot-symbol-config', {
+      body: JSON.stringify(slotSymbolConfig),
+      method: 'POST'
+    })
+    handleError(response, setError)
+
+    return await response.json()
+  } catch (e) {
+    setError(e.message)
+    window.scrollTo(0, 0)
   } finally {
     $.LoadingOverlay('hide')
   }
