@@ -3,6 +3,7 @@ import {
   HandlerContext,
   HandlerCallback
 } from '@netlify/functions'
+import { allowAllOriginDecorator, apiHandler, authDecorator } from 'utils/api'
 import { DynamoDB } from '../src/db'
 
 const db = new DynamoDB({
@@ -24,22 +25,10 @@ export const handler = (
   context: HandlerContext,
   callback: HandlerCallback
 ) => {
-  const json = JSON.parse(event.body || '')
-  if (json.password !== process.env.PASSWORD) {
-    console.log('Unauthorized access')
-    return callback(null, {
-      statusCode: 401
-    })
-  }
-
-  handle(json.data)
-    .then((response) => {
-      return callback(null, {
-        statusCode: 200,
-        body: JSON.stringify(response)
-      })
-    })
-    .catch((error) => {
-      return callback(null, { statusCode: 500, body: JSON.stringify(error) })
-    })
+  return apiHandler(
+    event,
+    [allowAllOriginDecorator, authDecorator],
+    callback,
+    handle
+  )
 }

@@ -152,7 +152,8 @@ export async function getMarketplaceItems(setError) {
   $.LoadingOverlay('show')
   try {
     const response = await fetch(functionHostResolver('get-marketplace'), {
-      method: 'POST'
+      method: 'POST',
+      body: JSON.stringify({})
     })
     handleError(response, setError)
     return await response.json()
@@ -250,7 +251,8 @@ export async function getActiveBatch(setError) {
   $.LoadingOverlay('show')
   try {
     const response = await fetch(functionHostResolver('get-active-batch'), {
-      method: 'POST'
+      method: 'POST',
+      body: JSON.stringify({})
     })
     handleError(response, setError)
 
