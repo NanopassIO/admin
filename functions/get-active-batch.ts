@@ -5,7 +5,6 @@ import {
   HandlerContext,
   HandlerCallback
 } from '@netlify/functions'
-import { allowAllOriginDecorator, apiHandler, authDecorator } from 'utils/api'
 
 AWS.config.update({
   region: process.env.REGION,
@@ -35,5 +34,14 @@ export const handler = (
   context: HandlerContext,
   callback: HandlerCallback
 ) => {
-  return apiHandler(event, [allowAllOriginDecorator], callback, handle)
+  handle()
+    .then((response) => {
+      return callback(null, {
+        statusCode: 200,
+        body: JSON.stringify(response)
+      })
+    })
+    .catch((error) => {
+      return callback(null, { statusCode: 500, body: JSON.stringify(error) })
+    })
 }

@@ -6,7 +6,6 @@ import {
   HandlerCallback
 } from '@netlify/functions'
 import { DynamoDB } from '../src/db'
-import { allowAllOriginDecorator, apiHandler } from 'utils/api'
 
 AWS.config.update({
   region: process.env.REGION,
@@ -96,5 +95,15 @@ export const handler = (
   context: HandlerContext,
   callback: HandlerCallback
 ) => {
-  return apiHandler(event, [allowAllOriginDecorator], callback, handle)
+  const json = JSON.parse(event.body)
+  handle(json.data)
+    .then((response) => {
+      return callback(null, {
+        statusCode: 200,
+        body: JSON.stringify(response)
+      })
+    })
+    .catch((error) => {
+      return callback(null, { statusCode: 500, body: JSON.stringify(error) })
+    })
 }
