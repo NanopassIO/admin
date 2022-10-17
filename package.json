@@ -36,8 +36,6 @@
     "@types/jquery": "^3.5.14",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@vercel/ncc": "^0.33.4",
-    "aws-cdk": "^2.44.0",
-    "aws-lambda": "^1.0.7",
     "esbuild": "^0.15.10",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.5.0",
