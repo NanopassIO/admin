@@ -8,7 +8,8 @@
     "activate": "ts-node -e \"import { handle } from './functions/activate-batch-auto-background'; handle()\"",
     "preload": "ts-node -e \"import { handle } from './functions/preload-batch-auto-background'; handle()\"",
     "build": "npx ncc build functions/activate-batch-auto-background.ts && zip -j deploy.zip ./dist/*",
-    "bid-lambda": "npx ncc build functions/calculate-winner-auto.ts && zip -j deploy.zip ./dist/*"
+    "bid-lambda": "npx ncc build functions/calculate-winner-auto.ts && zip -j deploy.zip ./dist/*",
+    "deploy": "cdk bootstrap && cdk synth && cdk deploy"
   },
   "author": "",
   "license": "ISC",
