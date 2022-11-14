@@ -202,8 +202,12 @@ export async function getAllBids(params, setError) {
       header: ['address', 'bid', 'prize']
     })
     const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, `${converted[0].prize} Bids`)
-    XLSX.writeFile(wb, `${converted[0].prize} Bids.xlsx`)
+    XLSX.utils.book_append_sheet(
+      wb,
+      ws,
+      `${converted[0].prize.slice(0, 25)} Bids`
+    )
+    XLSX.writeFile(wb, `${converted[0].prize.slice(0, 25)} Bids.xlsx`)
 
     return json
   } catch (e) {
