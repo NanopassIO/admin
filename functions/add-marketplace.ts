@@ -21,6 +21,7 @@ export async function handle(data: any, db?: DynamoDB) {
     instock: parseInt(data.instock),
     cost: parseInt(data.cost),
     active: data.active,
+    isMerch: data.isMerch,
     itemStartTimestamp: data.itemStartDate
   })
 }

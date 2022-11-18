@@ -688,6 +688,15 @@ function App() {
               name="marketplaceActive"
             />
           </div>
+          <div
+            class="input-group"
+            style="margin: 1rem 1rem 0 1rem; flex-direction: row; align-items: center;"
+          >
+            <label for="marketplaceActive" style="margin: 0 1rem 0 0"
+              >Merch? (Address required to purchase):</label
+            >
+            <input type="checkbox" id="isMerch" name="isMerch" />
+          </div>
           <br />
           <button
             id="click"
@@ -710,6 +719,7 @@ function App() {
                     instock: $('#marketplaceInstock').val().trim(),
                     cost: $('#marketplaceCost').val().trim(),
                     active: $('#marketplaceActive').is(':checked'),
+                    isMerch: $('#isMerch').is(':checked'),
                     itemStartDate: itemStartDate.getTime()
                   }
                 },
@@ -774,6 +784,7 @@ function App() {
                     $('#marketplaceInstock').val(i.instock)
                     $('#marketplaceCost').val(i.cost)
                     $('#marketplaceActive').prop('checked', i.active)
+                    $('#isMerch').prop('checked', i.isMerch)
                   }}
                 >
                   <img src="${i.image}" class="inventoryImage" />
@@ -793,6 +804,7 @@ function App() {
                     >
                   </p>
                   <p>Active: <b>${i.active ? 'True' : 'False'}</b></p>
+                  <p>Merch: <b>${i.isMerch ? 'True' : 'False'}</b></p>
                 </div>`
             )}
           </div>
