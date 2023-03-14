@@ -16,6 +16,7 @@ export async function handle(data: any, db?: DynamoDB) {
   await db.put('marketplace', {
     name: data.name,
     description: data.description,
+    code: data.code,
     image: data.image,
     supply: parseInt(data.supply),
     instock: parseInt(data.instock),
