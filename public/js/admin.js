@@ -622,6 +622,15 @@ function App() {
             />
           </div>
           <div class="input-group">
+            <label for="marketplaceCode">Marketplace Item Code:</label>
+            <textarea
+              type="marketplaceCode"
+              id="marketplaceCode"
+              name="marketplaceCode"
+              class="shadow appearance-none border rounded m-4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          </div>
+          <div class="input-group">
             <label for="marketplaceImage">Marketplace Item Image:</label>
             <input
               type="marketplaceImage"
@@ -705,6 +714,7 @@ function App() {
                   data: {
                     name: $('#marketplaceName').val().trim(),
                     description: $('#marketplaceDesc').val().trim(),
+                    code: $('#marketplaceCode').val().trim(),
                     image: $('#marketplaceImage').val().trim(),
                     supply: $('#marketplaceSupply').val().trim(),
                     instock: $('#marketplaceInstock').val().trim(),
@@ -769,6 +779,7 @@ function App() {
                     setMarketplaceImage(i.image)
                     $('#marketplaceName').val(i.name)
                     $('#marketplaceDesc').val(i.description)
+                    $('#marketplaceCode').val(i.code)
                     $('#marketplaceImage').val(i.image)
                     $('#marketplaceSupply').val(i.supply)
                     $('#marketplaceInstock').val(i.instock)
@@ -779,6 +790,7 @@ function App() {
                   <img src="${i.image}" class="inventoryImage" />
                   <h6>Name: <b>${i.name}</b></h6>
                   <p>Description: <b>${i.description}</b></p>
+                  <p>Item Code: <b>${i.code}</b></p>
                   <p>Cost: <b>${i.cost}</b></p>
                   <p>Supply: <b>${i.supply}</b></p>
                   <p>Instock: <b>${i.instock}</b></p>
