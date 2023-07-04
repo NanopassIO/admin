@@ -23,3 +23,11 @@ The system mainly consists of ether.js to communicate with the smart contract si
 ## Front-end
 
 To run the front-end serve the `public` directory, it is all static HTML and compatible with modern browsers without any build steps.
+
+## Deployment In Production
+
+1. Install `aws cli` in your local machine. You can refer to this [guide](https://aws.amazon.com/cli/) here for the installation instruction
+2. Do `aws configure` in your local terminal. It will prompt you to input the access id and secret key of your aws account
+3. Do `npm run deploy` in the project directory to deploy it to your aws environment
+   - Update the ACCOUNT_NO and REGION in your .env accordingly
+4. Do `npx cdk destroy` to release the resources
